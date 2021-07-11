@@ -18,11 +18,11 @@ class Config(object):
     def getRaw(self, section, name):
         return self._configRaw.get(section, name)
 
-    def setModel(self, model=''):
-        self.model = model
+    def setMode(self, mode=''):
+        self.mode = mode
 
-    def getModel(self):
-        return self.model
+    def getMode(self):
+        return self.mode
 
 
 global_config = Config()

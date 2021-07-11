@@ -14,10 +14,10 @@ if __name__ == '__main__':
  3.缺货上架自动加购物车下单
     """
     print(choiceList)
-    choice_function = global_config.getRaw("config", "model")
+    choice_function = global_config.getRaw("config", "mode")
     if choice_function == '':
         choice_function = input('请选择:')
-    global_config.setModel(choice_function)
+    global_config.setMode(choice_function)
     if choice_function == '1':
         jd_seckill = Seckiller()
         jd_seckill.reserve()

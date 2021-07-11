@@ -541,7 +541,6 @@ class Waiter():
                 logger.info('订单提交成功! 订单号：%s', resp_json.get('orderId'))
                 sendMessage('订单提交成功! 订单号：{}'.format(resp_json.get('orderId')))
                 sys.exit(0)
-                return True
             else:
                 message, result_code = resp_json.get('message'), resp_json.get('resultCode')
                 if result_code == 0:

@@ -2,9 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="557626c8-a0b7-4bf6-b000-aaaff199c3dd" name="默认更改列表" comment="">
+      <change afterPath="$PROJECT_DIR$/README的副本.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/get_eid_fp.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/JD_SHOPPER.log" beforeDir="false" afterPath="$PROJECT_DIR$/JD_SHOPPER.log" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/WaitingAndBuy.py" beforeDir="false" afterPath="$PROJECT_DIR$/WaitingAndBuy.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/config.ini" beforeDir="false" afterPath="$PROJECT_DIR$/config.ini" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -25,6 +26,11 @@
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$" />
+    </key>
   </component>
   <component name="RunManager">
     <configuration name="main" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
@@ -66,7 +72,7 @@
       <option name="presentableId" value="Default" />
       <updated>1625960643880</updated>
       <workItem from="1625960646818" duration="5632000" />
-      <workItem from="1625970377756" duration="1076000" />
+      <workItem from="1625970377756" duration="2848000" />
     </task>
     <servers />
   </component>

@@ -256,7 +256,7 @@ class Waiter():
             state = False
             url = 'https://item.jd.com/{}.html'.format(global_config.getRaw('config', 'sku_id'))
             driver.get(url)
-            time.sleep(30)
+            time.sleep(60)
             buttonValue = driver.find_element_by_xpath(
                 "/html/body/div[@class='w']/div[@class='product-intro clearfix']/div[@class='itemInfo-wrap']/div[@class='summary p-choose-wrap']/div[@id='choose-btns']/a[@id='InitCartUrl']").get_attribute(
                 "class")

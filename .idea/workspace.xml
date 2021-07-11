@@ -3,6 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="557626c8-a0b7-4bf6-b000-aaaff199c3dd" name="默认更改列表" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/WaitingAndBuy.py" beforeDir="false" afterPath="$PROJECT_DIR$/WaitingAndBuy.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -63,7 +64,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1625960643880</updated>
-      <workItem from="1625960646818" duration="4883000" />
+      <workItem from="1625960646818" duration="5150000" />
     </task>
     <servers />
   </component>

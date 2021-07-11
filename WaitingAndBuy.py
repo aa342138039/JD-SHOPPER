@@ -1,17 +1,10 @@
 import math
 import functools
-import re
-import sys
-
 from lxml import html
-
 import requests
 import time
 import json
 import random
-
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
 from concurrent.futures import ProcessPoolExecutor
 from exception import SKException
 from bs4 import BeautifulSoup
@@ -148,18 +141,15 @@ class Waiter():
         return page
 
     def _waitForSell(self):
-        # logger.info("正在等待商品上架：{}".format(self.get_sku_title()[:40] + " ......"))
-        # while True:
-        #     if self.get_single_item_stock():
-        #         sendMessage("商品上架: {}".format(self.get_sku_title()[:40] + " ......"))
-        #         logger.info("商品上架: {}".format(self.get_sku_title()[:40] + " ......"))
-        #         # self.seckill_by_proc_pool()
-        #         #self.waitAndBuy_by_proc_pool()
-        #         sys.exit(1)
-        #     else:
-        #         time.sleep(1)
-
-        self.getInfo_selenium()
+        logger.info("正在等待商品上架：{}".format(self.get_sku_title()[:40] + " ......"))
+        while True:
+            if self.get_single_item_stock():
+                sendMessage("商品上架: {}".format(self.get_sku_title()[:40] + " ......"))
+                logger.info("商品上架: {}".format(self.get_sku_title()[:40] + " ......"))
+                # self.waitAndBuy_by_proc_pool()
+                self.buy()
+            else:
+                time.sleep(random.randint(1, 10))
 
 
     def get_single_item_stock(self):
@@ -171,29 +161,14 @@ class Waiter():
         """
         area_id = self.area
         sku_id = self.skuids
-
-        cat = self.item_cat.get(sku_id)
-        vender_id = self.item_vender_ids.get(sku_id)
-        if not cat:
-            page = self._get_item_detail_page(sku_id)
-            match = re.search(r'cat: \[(.*?)\]', page.text)
-            cat = match.group(1)
-            self.item_cat[sku_id] = cat
-
-            match = re.search(r'venderId:(\d*?),', page.text)
-            vender_id = match.group(1)
-            self.item_vender_ids[sku_id] = vender_id
-
-        url = 'https://c0.3.cn/stock'
+        url = 'https://cd.jd.com/stocks'
+        # https://cd.jd.com/stocks?callback=jQuery3528455&type=getstocks&skuIds=100011513445&area=21_1827_4101_40925&_=1625970219360
         payload = {
-            'skuId': sku_id,
-            'area': area_id,
-            'ch': 1,
-            '_': str(int(time.time() * 1000)),
             'callback': 'jQuery{}'.format(random.randint(1000000, 9999999)),
-            'extraParam': '{"originid":"1"}',  # get error stock state without this param
-            'cat': cat,  # get 403 Forbidden without this param (obtained from the detail page)
-            'venderId': vender_id  # return seller information with this param (can't be ignored)
+            'type': 'getstocks',
+            'skuIds': sku_id,
+            'area': area_id,
+            '_': str(int(time.time() * 1000)),
         }
         headers = {
             'User-Agent': self.user_agent,
@@ -204,18 +179,15 @@ class Waiter():
         try:
             resp_text = requests.get(url=url, params=payload, headers=headers, timeout=self.timeout).text
             resp_json = parse_json(resp_text)
-            stock_info = resp_json
-            sku_state = stock_info.get('code')  # 商品是否上架
+            stock_info = resp_json.get(sku_id)
+            sku_state = stock_info.get('skuState')  # 商品是否上架
             stock_state = stock_info.get('StockState')  # 商品库存状态：33 -- 现货  0,34 -- 无货  36 -- 采购中  40 -- 可配货
             if sku_state == 1 and stock_state in (33, 40):
-                if stock_state == 33:
-                    state = "现货"
-                elif stock_state == 40:
-                    state = "可补货"
-                else:
-                    state = ""
-                logger.info("有货: " + state)
+                logger.info("有货: " + stock_info.get('StockStateName'))
                 return True
+            # else:
+            #     logger.info(stock_info.get('StockStateName'))
+            #     return False
         except requests.exceptions.Timeout:
             logger.error('查询 %s 库存信息超时(%ss)', sku_id, self.timeout)
             return False
@@ -226,54 +198,56 @@ class Waiter():
             logger.error('查询 %s 库存信息发生异常:\nresp: %s\nexception: %s', sku_id, resp_text, e)
             return False
 
-    def getInfo_selenium(self):
-        """
-        等待进行抢购
-        """
-        config_headless = True
-
-        chrome_options = Options()
-        chrome_options.add_argument(self.user_agent)
-        chrome_options.add_argument("--profile-directory=Default")
-        chrome_options.add_argument("--whitelisted-ips")
-        chrome_options.add_argument("--start-maximized")
-        chrome_options.add_argument("--disable-extensions")
-        chrome_options.add_argument("--disable-plugins-discovery")
-
-        if config_headless == True:
-            # 此处开启后为无头浏览器
-            chrome_options.add_argument('--headless')
-            chrome_options.add_argument('--no-sandbox')
-            chrome_options.add_argument('--disable-dev-shm-usage')
-            chrome_options.add_argument('blink-settings=imagesEnabled=false')
-            chrome_options.add_argument('--disable-gpu')
-
-        logger.info("正在等待商品上架：{}".format(self.get_sku_title()[:40] + " ......"))
-        driver = webdriver.Chrome('/usr/local/bin/chromedriver', options=chrome_options)
-        driver.maximize_window()
-
-        while True:
-            state = False
-            url = 'https://item.jd.com/{}.html'.format(global_config.getRaw('config', 'sku_id'))
-            driver.get(url)
-            time.sleep(60)
-            buttonValue = driver.find_element_by_xpath(
-                "/html/body/div[@class='w']/div[@class='product-intro clearfix']/div[@class='itemInfo-wrap']/div[@class='summary p-choose-wrap']/div[@id='choose-btns']/a[@id='InitCartUrl']").get_attribute(
-                "class")
-            # joinCart = x_data.xpath("/html/body/div[@class='w']/div[@class='product-intro clearfix']/div[@class='itemInfo-wrap']/div[@class='summary p-choose-wrap']/div[@id='choose-btns']/a[@id='InitCartUrl']/@class")
-            # notice = x_data.xpath("/html/body/div[@class='w']/div[@class='product-intro clearfix']/div[@class='itemInfo-wrap']/div[@class='summary p-choose-wrap']/div[@id='choose-btns']/a[@id='btn-notify']/text()")
-            if buttonValue == "btn-special1 btn-lg  btn-disable":  # 没货
-                State = False
-            else:
-                state = True
-            if state:
-                driver.quit()
-                sendMessage("商品上架: {}".format(self.get_sku_title()[:40] + " ......"))
-                logger.info("商品上架: {}".format(self.get_sku_title()[:40] + " ......"))
-                # self.waitAndBuy_by_proc_pool()
-                self.buy()
-            else:
-                pass
+    # from selenium import webdriver
+    # from selenium.webdriver.chrome.options import Options
+    # def getInfo_selenium(self):
+    #     """
+    #     等待进行抢购
+    #     """
+    #     config_headless = True
+    #
+    #     chrome_options = Options()
+    #     chrome_options.add_argument(self.user_agent)
+    #     chrome_options.add_argument("--profile-directory=Default")
+    #     chrome_options.add_argument("--whitelisted-ips")
+    #     chrome_options.add_argument("--start-maximized")
+    #     chrome_options.add_argument("--disable-extensions")
+    #     chrome_options.add_argument("--disable-plugins-discovery")
+    #
+    #     if config_headless == True:
+    #         # 此处开启后为无头浏览器
+    #         chrome_options.add_argument('--headless')
+    #         chrome_options.add_argument('--no-sandbox')
+    #         chrome_options.add_argument('--disable-dev-shm-usage')
+    #         chrome_options.add_argument('blink-settings=imagesEnabled=false')
+    #         chrome_options.add_argument('--disable-gpu')
+    #
+    #     logger.info("正在等待商品上架：{}".format(self.get_sku_title()[:40] + " ......"))
+    #     driver = webdriver.Chrome('/usr/local/bin/chromedriver', options=chrome_options)
+    #     driver.maximize_window()
+    #
+    #     while True:
+    #         state = False
+    #         url = 'https://item.jd.com/{}.html'.format(global_config.getRaw('config', 'sku_id'))
+    #         driver.get(url)
+    #         time.sleep(60)
+    #         buttonValue = driver.find_element_by_xpath(
+    #             "/html/body/div[@class='w']/div[@class='product-intro clearfix']/div[@class='itemInfo-wrap']/div[@class='summary p-choose-wrap']/div[@id='choose-btns']/a[@id='InitCartUrl']").get_attribute(
+    #             "class")
+    #         # joinCart = x_data.xpath("/html/body/div[@class='w']/div[@class='product-intro clearfix']/div[@class='itemInfo-wrap']/div[@class='summary p-choose-wrap']/div[@id='choose-btns']/a[@id='InitCartUrl']/@class")
+    #         # notice = x_data.xpath("/html/body/div[@class='w']/div[@class='product-intro clearfix']/div[@class='itemInfo-wrap']/div[@class='summary p-choose-wrap']/div[@id='choose-btns']/a[@id='btn-notify']/text()")
+    #         if buttonValue == "btn-special1 btn-lg  btn-disable":  # 没货
+    #             State = False
+    #         else:
+    #             state = True
+    #         if state:
+    #             driver.quit()
+    #             sendMessage("商品上架: {}".format(self.get_sku_title()[:40] + " ......"))
+    #             logger.info("商品上架: {}".format(self.get_sku_title()[:40] + " ......"))
+    #             # self.waitAndBuy_by_proc_pool()
+    #             self.buy()
+    #         else:
+    #             pass
 
 
 

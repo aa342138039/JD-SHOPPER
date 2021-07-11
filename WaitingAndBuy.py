@@ -270,8 +270,8 @@ class Waiter():
                 driver.quit()
                 sendMessage("商品上架: {}".format(self.get_sku_title()[:40] + " ......"))
                 logger.info("商品上架: {}".format(self.get_sku_title()[:40] + " ......"))
-                # self.seckill_by_proc_pool()
-                self.waitAndBuy_by_proc_pool()
+                # self.waitAndBuy_by_proc_pool()
+                self.buy()
             else:
                 pass
 

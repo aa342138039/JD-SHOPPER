@@ -1,11 +1,15 @@
 import math
 import functools
+import re
+import sys
+
 from lxml import html
 
 import requests
 import time
 import json
 import random
+
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from concurrent.futures import ProcessPoolExecutor
@@ -15,6 +19,7 @@ from config import global_config
 from logger import logger
 from login import SpiderSession, QrLogin
 from message import sendMessage
+from util import parse_json
 
 
 class Waiter():
@@ -28,6 +33,10 @@ class Waiter():
         self.eid = global_config.getRaw("config", "eid")
         self.fp = global_config.getRaw("config", "fp")
         self.user_agent = self.spider_session.user_agent
+        self.item_cat = dict()
+        self.item_vender_ids = dict()  # 记录商家id
+        self.timeout = float(global_config.getRaw('config', 'timeout'))
+        self.headers = {'User-Agent': self.user_agent}
 
     def login_by_qrcode(self):
         """
@@ -129,8 +138,93 @@ class Waiter():
             print('库存状态：{}(无现货)'.format(jsparser['StockStateName']))
             return False
 
+    def _get_item_detail_page(self, sku_id):
+        """访问商品详情页
+        :param sku_id: 商品id
+        :return: 响应
+        """
+        url = 'https://item.jd.com/{}.html'.format(sku_id)
+        page = requests.get(url=url, headers=self.headers)
+        return page
+
     def _waitForSell(self):
+        # logger.info("正在等待商品上架：{}".format(self.get_sku_title()[:40] + " ......"))
+        # while True:
+        #     if self.get_single_item_stock():
+        #         sendMessage("商品上架: {}".format(self.get_sku_title()[:40] + " ......"))
+        #         logger.info("商品上架: {}".format(self.get_sku_title()[:40] + " ......"))
+        #         # self.seckill_by_proc_pool()
+        #         #self.waitAndBuy_by_proc_pool()
+        #         sys.exit(1)
+        #     else:
+        #         time.sleep(1)
+
         self.getInfo_selenium()
+
+
+    def get_single_item_stock(self):
+        """获取单个商品库存状态
+        :param sku_id: 商品id
+        :param num: 商品数量
+        :param area: 地区id
+        :return: 商品是否有货 True/False
+        """
+        area_id = self.area
+        sku_id = self.skuids
+
+        cat = self.item_cat.get(sku_id)
+        vender_id = self.item_vender_ids.get(sku_id)
+        if not cat:
+            page = self._get_item_detail_page(sku_id)
+            match = re.search(r'cat: \[(.*?)\]', page.text)
+            cat = match.group(1)
+            self.item_cat[sku_id] = cat
+
+            match = re.search(r'venderId:(\d*?),', page.text)
+            vender_id = match.group(1)
+            self.item_vender_ids[sku_id] = vender_id
+
+        url = 'https://c0.3.cn/stock'
+        payload = {
+            'skuId': sku_id,
+            'area': area_id,
+            'ch': 1,
+            '_': str(int(time.time() * 1000)),
+            'callback': 'jQuery{}'.format(random.randint(1000000, 9999999)),
+            'extraParam': '{"originid":"1"}',  # get error stock state without this param
+            'cat': cat,  # get 403 Forbidden without this param (obtained from the detail page)
+            'venderId': vender_id  # return seller information with this param (can't be ignored)
+        }
+        headers = {
+            'User-Agent': self.user_agent,
+            'Referer': 'https://item.jd.com/{}.html'.format(sku_id),
+        }
+
+        resp_text = ''
+        try:
+            resp_text = requests.get(url=url, params=payload, headers=headers, timeout=self.timeout).text
+            resp_json = parse_json(resp_text)
+            stock_info = resp_json
+            sku_state = stock_info.get('code')  # 商品是否上架
+            stock_state = stock_info.get('StockState')  # 商品库存状态：33 -- 现货  0,34 -- 无货  36 -- 采购中  40 -- 可配货
+            if sku_state == 1 and stock_state in (33, 40):
+                if stock_state == 33:
+                    state = "现货"
+                elif stock_state == 40:
+                    state = "可补货"
+                else:
+                    state = ""
+                logger.info("有货: " + state)
+                return True
+        except requests.exceptions.Timeout:
+            logger.error('查询 %s 库存信息超时(%ss)', sku_id, self.timeout)
+            return False
+        except requests.exceptions.RequestException as request_exception:
+            logger.error('查询 %s 库存信息发生网络请求异常:\n%s', sku_id, request_exception)
+            return False
+        except Exception as e:
+            logger.error('查询 %s 库存信息发生异常:\nresp: %s\nexception: %s', sku_id, resp_text, e)
+            return False
 
     def getInfo_selenium(self):
         """
@@ -162,7 +256,7 @@ class Waiter():
             state = False
             url = 'https://item.jd.com/{}.html'.format(global_config.getRaw('config', 'sku_id'))
             driver.get(url)
-            time.sleep(10)
+            time.sleep(30)
             buttonValue = driver.find_element_by_xpath(
                 "/html/body/div[@class='w']/div[@class='product-intro clearfix']/div[@class='itemInfo-wrap']/div[@class='summary p-choose-wrap']/div[@id='choose-btns']/a[@id='InitCartUrl']").get_attribute(
                 "class")
@@ -180,6 +274,7 @@ class Waiter():
                 self.waitAndBuy_by_proc_pool()
             else:
                 pass
+
 
 
 

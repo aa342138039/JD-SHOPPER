@@ -5,8 +5,11 @@ from logger import logger
 from config import global_config
 
 def sendMessage(message):
-    model = global_config.getRaw("messenger", "model")
-    if model == "group":
+    enabled = global_config.getRaw("messenger", "enable")
+    if not enabled:
+        return
+    mode = global_config.getRaw("messenger", "mode")
+    if mode == "group":
         groupid = global_config.getRaw("messenger", "group_id")
         sendGroupMessage(message, groupid)
     else:

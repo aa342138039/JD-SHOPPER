@@ -95,6 +95,9 @@ pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple/
 > 具体修改为：在config.ini文件
 
 #### 4.运行main.py 
+```sh
+python3 main.py
+```
 根据提示选择相应功能即可
 
 #### 5.抢购结果确认 

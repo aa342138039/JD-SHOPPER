@@ -4,7 +4,10 @@ from Seckill import Seckiller
 from WaitingAndBuy import Waiter
 
 if __name__ == '__main__':
-    choiceList = """                                      
+    choiceList = """  
+===== 注意 =====
+使用前请按要求填写config.ini中的
+                                        
 功能列表：                                                                                
  1.预约商品
  2.秒杀抢购商品

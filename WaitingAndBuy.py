@@ -1,12 +1,11 @@
 import math
 import functools
-import sys
-
 from lxml import html
 import requests
 import time
 import json
 import random
+import sys
 from concurrent.futures import ProcessPoolExecutor
 from exception import SKException
 from bs4 import BeautifulSoup
@@ -14,6 +13,7 @@ from config import global_config
 from logger import logger
 from login import SpiderSession, QrLogin
 from message import sendMessage
+from timer import Timer
 from util import parse_json
 
 
@@ -32,6 +32,7 @@ class Waiter():
         self.item_vender_ids = dict()  # 记录商家id
         self.timeout = float(global_config.getRaw('config', 'timeout'))
         self.headers = {'User-Agent': self.user_agent}
+        self.timers = Timer()
 
     def login_by_qrcode(self):
         """
@@ -64,6 +65,9 @@ class Waiter():
 
     def waitForSell(self):
         self._waitForSell()
+
+    def waitTimeForSell(self):
+        self._waitTimeForSell()
 
     def get_tag_value(self, tag, key='', index=0):
         if key:
@@ -152,6 +156,12 @@ class Waiter():
                 self.buy()
             else:
                 time.sleep(random.randint(1, 10))
+
+    def _waitTimeForSell(self):
+        self.initCart()
+        logger.info("正在等待商品上架：{}".format(self.get_sku_title()[:40] + " ......"))
+        self.timers.start()
+        self.fastBuy()
 
 
     def get_single_item_stock(self):
@@ -467,7 +477,7 @@ class Waiter():
             logger.error('订单结算页面获取异常：%s' % e)
         except Exception as e:
             logger.error('下单页面数据解析异常：%s', e)
-        return risk_control
+        return -1
 
 
     def submit_order(self, risk_control):
@@ -540,7 +550,8 @@ class Waiter():
             if resp_json.get('success'):
                 logger.info('订单提交成功! 订单号：%s', resp_json.get('orderId'))
                 sendMessage('订单提交成功! 订单号：{}'.format(resp_json.get('orderId')))
-                sys.exit(0)
+                sys.exit(1)
+                return True
             else:
                 message, result_code = resp_json.get('message'), resp_json.get('resultCode')
                 if result_code == 0:
@@ -697,3 +708,27 @@ class Waiter():
             logger.info('执行结束，提交订单失败！')
             return False
 
+    @check_login
+    def initCart(self):
+        sku_id = global_config.getRaw('config', 'sku_id')
+        self.add_item_to_cart(sku_id)
+        self.cancel_select_all_cart_item()
+
+    @check_login
+    def fastBuy(self):
+        retry = eval(global_config.getRaw("config", "retry"))
+        for count in range(retry):
+            logger.info('第[%s/%s]次尝试提交订单', count, retry)
+            risk_control = self.get_checkout_page_detail()
+            if risk_control == -1:
+                continue
+            if risk_control == '刷新太频繁了':
+                return False
+            if len(risk_control) > 0:
+                if self.submit_order(risk_control):
+                    return True
+            logger.info('休息%ss', 3)
+            time.sleep(3)
+        else:
+            logger.info('执行结束，提交订单失败！')
+            return False

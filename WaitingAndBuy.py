@@ -147,11 +147,13 @@ class Waiter():
         return page
 
     def _waitForSell(self):
-        logger.info("正在等待商品上架：{}".format(self.get_sku_title()[:40] + " ......"))
+        area_id = self.area
+        sku_id = self.skuids
+        logger.info("正在等待商品上架：{}".format(self.get_sku_title()[:80] + " ......"))
         while True:
-            if self.get_single_item_stock():
-                sendMessage("商品上架: {}".format(self.get_sku_title()[:40] + " ......"))
-                logger.info("商品上架: {}".format(self.get_sku_title()[:40] + " ......"))
+            if self.get_single_item_stock(sku_id, area_id):
+                sendMessage("商品上架: {}".format(self.get_sku_title()[:80] + " ......"))
+                logger.info("商品上架: {}".format(self.get_sku_title()[:80] + " ......"))
                 # self.waitAndBuy_by_proc_pool()
                 self.buy()
             else:
@@ -159,20 +161,18 @@ class Waiter():
 
     def _waitTimeForSell(self):
         self.initCart()
-        logger.info("正在等待商品上架：{}".format(self.get_sku_title()[:40] + " ......"))
+        logger.info("正在等待商品上架：{}".format(self.get_sku_title()[:80] + " ......"))
         self.timers.start()
         self.fastBuy()
 
 
-    def get_single_item_stock(self):
+    def get_single_item_stock(self, sku_id, area_id):
         """获取单个商品库存状态
         :param sku_id: 商品id
         :param num: 商品数量
         :param area: 地区id
         :return: 商品是否有货 True/False
         """
-        area_id = self.area
-        sku_id = self.skuids
         url = 'https://cd.jd.com/stocks'
         # https://cd.jd.com/stocks?callback=jQuery3528455&type=getstocks&skuIds=100011513445&area=21_1827_4101_40925&_=1625970219360
         payload = {
@@ -234,7 +234,7 @@ class Waiter():
     #         chrome_options.add_argument('blink-settings=imagesEnabled=false')
     #         chrome_options.add_argument('--disable-gpu')
     #
-    #     logger.info("正在等待商品上架：{}".format(self.get_sku_title()[:40] + " ......"))
+    #     logger.info("正在等待商品上架：{}".format(self.get_sku_title()[:80] + " ......"))
     #     driver = webdriver.Chrome('/usr/local/bin/chromedriver', options=chrome_options)
     #     driver.maximize_window()
     #
@@ -254,8 +254,8 @@ class Waiter():
     #             state = True
     #         if state:
     #             driver.quit()
-    #             sendMessage("商品上架: {}".format(self.get_sku_title()[:40] + " ......"))
-    #             logger.info("商品上架: {}".format(self.get_sku_title()[:40] + " ......"))
+    #             sendMessage("商品上架: {}".format(self.get_sku_title()[:80] + " ......"))
+    #             logger.info("商品上架: {}".format(self.get_sku_title()[:80] + " ......"))
     #             # self.waitAndBuy_by_proc_pool()
     #             self.buy()
     #         else:

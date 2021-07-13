@@ -711,8 +711,22 @@ class Waiter():
     @check_login
     def initCart(self):
         sku_id = global_config.getRaw('config', 'sku_id')
-        self.add_item_to_cart(sku_id)
         self.cancel_select_all_cart_item()
+        cart = self.cart_detail()
+        if sku_id in cart:
+            logger.info('%s 已在购物车中，调整数量为 %s', sku_id, 1)
+            cart_item = cart.get(sku_id)
+            self.change_item_num_in_cart(
+                sku_id=sku_id,
+                vender_id=cart_item.get('vender_id'),
+                num=1,
+                p_type=cart_item.get('p_type'),
+                target_id=cart_item.get('target_id'),
+                promo_id=cart_item.get('promo_id')
+            )
+        else:
+            self.add_item_to_cart(sku_id)
+        logger.info('购物车初始化结束，程序开始后请勿更改购物车')
 
     @check_login
     def fastBuy(self):

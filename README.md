@@ -5,7 +5,9 @@
 [![license](https://img.shields.io/badge/license-GPL-blue.svg)](./LICENSE)
 [![star, issue](https://img.shields.io/badge/star%2C%20issue-welcome-brightgreen.svg)](https://github.com/tychxn/jd-assistant)
 
-京东抢购助手( 1.预约商品 2.秒杀抢购商品 3.缺货上架自动加购物车下单)
+京东抢购助手( 1.缺货上架自动加购物车下单 2.定时加购物车下单)
+
+（PS：已失效 - 预约商品/秒杀抢购商品）
 
 ## 特别声明:
 
@@ -83,7 +85,8 @@ pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple/
 
 (3)配置一下时间
 > 现在不强制要求同步最新时间了，程序会自动同步京东时间
->> 但要是电脑时间快慢了好几个小时，最好还是同步一下吧
+>
+> > 但要是电脑时间快慢了好几个小时，最好还是同步一下吧
 
 以上都是必须的.
 > tips：

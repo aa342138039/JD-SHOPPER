@@ -11,6 +11,8 @@
 
 ## 特别声明:
 
+- 如有侵权违规，请提交PR，私信，联系我，会在7工作日内删除。
+
 * 本仓库发布的`JD_SHOPPER`项目中涉及的任何脚本，仅用于测试和学习研究，禁止用于商业用途，不能保证其合法性，准确性，完整性和有效性，请根据情况自行判断。
 
 * 本项目内所有资源文件，禁止任何公众号、自媒体进行任何形式的转载、发布。
@@ -114,7 +116,3 @@ python3 main.py
 ##### 作者-3 https://github.com/andyzys/jd_seckill 提供的代码
 ##### 作者-4 https://github.com/tychxn/jd-assistant 提供的代码
 
-
-## Sponsor
-
-[![JetBrains](./docs/jetbrains.svg)](https://www.jetbrains.com/?from=jd-assistant)

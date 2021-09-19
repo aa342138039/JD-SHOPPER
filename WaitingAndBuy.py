@@ -521,7 +521,7 @@ class Waiter():
 
         def encrypt_payment_pwd(payment_pwd):
             return ''.join(['u3' + x for x in payment_pwd])
-        self.payment_pwd="0"
+        self.payment_pwd=global_config.getRaw("account", "payment_pwd")
         if len(self.payment_pwd) > 0:
             data['submitOrderParam.payPassword'] = encrypt_payment_pwd(self.payment_pwd)
 

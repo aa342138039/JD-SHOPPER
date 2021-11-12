@@ -1,10 +1,10 @@
 import os
 import configparser
 
-
 class Config(object):
     def __init__(self, config_file='config.ini'):
-        self._path = os.path.join(os.getcwd(), config_file)
+        self.rootPath = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        self._path = self.rootPath + "/Config/" + config_file
         if not os.path.exists(self._path):
             raise FileNotFoundError("No such file: config.ini")
         self._config = configparser.ConfigParser()
@@ -12,17 +12,14 @@ class Config(object):
         self._configRaw = configparser.RawConfigParser()
         self._configRaw.read(self._path, encoding='utf-8-sig')
 
-    def get(self, section, name):
-        return self._config.get(section, name)
+    def settings(self, section, name):
+        return eval(self._config.get(section, name))
 
-    def getRaw(self, section, name):
+    def raw(self, section, name):
         return self._configRaw.get(section, name)
 
-    def setMode(self, mode=''):
-        self.mode = mode
-
-    def getMode(self):
-        return self.mode
+    def path(self):
+        return self.rootPath
 
 
-global_config = Config()
+config = Config()

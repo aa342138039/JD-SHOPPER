@@ -4,15 +4,15 @@ import requests
 import json
 
 from datetime import datetime
-from logger import logger
-from config import global_config
+from Logger.logger import logger
+from Config.settings import config
 
 
 class Timer(object):
     def __init__(self, sleep_interval=0.5):
         # '2018-09-28 22:45:50.000'
         # buy_time = 2020-12-22 09:59:59.500
-        buy_time_everyday = global_config.getRaw('config', 'buy_time').__str__()
+        buy_time_everyday = config.global_config.getRaw('config', 'buy_time').__str__()
         localtime = time.localtime(time.time())
         #self.buy_time = datetime.strptime(
         #    localtime.tm_year.__str__() + '-' + localtime.tm_mon.__str__() + '-' + localtime.tm_mday.__str__()
@@ -52,7 +52,7 @@ class Timer(object):
     def start(self):
         logger.info('正在等待到达设定时间:{}'.format(self.buy_time))
         logger.info('正检测本地时间与京东服务器时间误差为【{}】毫秒'.format(self.diff_time))
-        mode = global_config.getMode()
+        mode = config.global_config.getMode()
         if mode != '3':
             while True:
                 # 本地时间减去与京东的时间差，能够将时间误差提升到0.1秒附近

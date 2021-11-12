@@ -1,0 +1,33 @@
+.data_dict, .data_dict_goods{
+  display: none;
+}
+#form_container{
+  width: 600px;
+  margin: 0 auto;
+  border: 1px solid gainsboro;
+}
+h1{
+  text-align: center;
+  margin: 30px 0;
+  padding-bottom: 20px;
+}
+#account_input, #password_input{
+  width: 300px;
+}
+#password_form{
+  width: 380px;
+}
+.goods_input{
+  width: 300px;
+  margin-right: 20px;
+}
+.num_select{
+  width: 120px;
+}
+#add_button{
+  margin-left: 150px;
+  margin-bottom: 30px;
+}
+#run_button{
+  margin-left: 30px;
+}

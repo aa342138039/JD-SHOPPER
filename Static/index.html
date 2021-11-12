@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>订单自动提交</title>
+    <link rel="Shortcut Icon" href="title.ico" type="image/x-icon" />
+    <link type="text/css" rel="stylesheet" href="css/element_index.css" />
+    <link type="text/css" rel="stylesheet" href="css/index.css" />
+  </head>
+  <body>
+    <div id="form_container">
+      <h1>订单自动提交</h1>
+      <el-form ref="form" :model="form" label-width="80px">
+        <el-form-item label="登录方式">
+          <el-radio v-model="radio_login" label="1" @change="LoginMode" border
+            >自动登录</el-radio
+          >
+          <el-radio v-model="radio_login" label="2" @change="LoginMode" border
+            >手动登录</el-radio
+          >
+        </el-form-item>
+        <el-form-item label="账号">
+          <el-input
+            id="account_input"
+            v-model="account_value"
+            placeholder="请输入账号"
+            :disabled="input_writeable"
+          ></el-input>
+        </el-form-item>
+        <el-form-item label="密码" id="password_form">
+          <el-input
+            id="password_input"
+            v-model="password_value"
+            placeholder="请输入密码"
+            :disabled="input_writeable"
+            show-password
+          ></el-input>
+        </el-form-item>
+        <el-form-item label="运行时间">
+          <el-select v-model="date_value" placeholder="选择日期（默认今天）">
+            <el-option
+              v-for="item in date_options"
+              :key="item.date_value"
+              :label="item.label"
+              :value="item.date_value"
+            >
+            </el-option>
+          </el-select>
+          <el-time-picker
+            v-model="time_value"
+            :picker-options="{}"
+            placeholder="选择时间（默认现在）"
+          >
+          </el-time-picker>
+        </el-form-item>
+        <goods_link></goods_link>
+        <div v-for="(d,index) in goods_link_counter" :key="index">
+          <goods_link></goods_link>
+        </div>
+        <el-button id="add_button" @click="addGoods">继续添加</el-button>
+        <el-button
+          id="run_button"
+          @click="changeRunStatus"
+          type="primary"
+          :class="run_status"
+          >开始运行</el-button
+        >
+      </el-form>
+      <ul class="data_dict">
+        <!--登录方式， 账号， 密码， 运行时间， url-->
+        <li class="is_manual">{{is_manual}}</li>
+        <li class="jd_conut">{{account_value}}</li>
+        <li class="jd_password">{{password_value}}</li>
+        <li class="run_date">{{date_value}}</li>
+        <li class="run_time">{{time_value}}</li>
+      </ul>
+    </div>
+    <template id="goods_link">
+      <el-form-item label="添加商品" id="goods_link_form">
+        <el-input
+          class="goods_input"
+          v-model="goods_url"
+          placeholder="商品链接"
+        ></el-input>
+        <el-input-number
+          class="num_select"
+          v-model="num"
+          @change="handleChange"
+          :min="1"
+          :max="999"
+          label="数量"
+        ></el-input-number>
+        <ul class="data_dict_goods">
+          <li class="goods_url">{{goods_url}}</li>
+          <li class="goods_num">{{num}}</li>
+        </ul>
+      </el-form-item>
+    </template>
+  </body>
+  <script src="js/vue.js"></script>
+  <script src="js/element_index.js"></script>
+  <script>
+    Vue.component("goods_link", {
+      template: "#goods_link",
+      data: function () {
+        return {
+          num: 1,
+          goods_url: "",
+        };
+      },
+      // props:{
+      //   num:{
+      //     type: Number,
+      //     default: 1
+      //   },
+      //   goods_url: {
+      //     type: String,
+      //     default: ''
+      //   }
+      // },
+      methods: {
+        handleChange(value) {},
+      },
+    });
+    new Vue({
+      el: "#form_container",
+      data: function () {
+        return {
+          account_value: "",
+          password_value: "",
+          radio_login: "1",
+          is_manual: 0,
+          input_writeable: false,
+          run_status: "wait",
+          goods_link_counter: [],
+          date_value: "",
+          date_options: [
+            {
+              date_value: "today",
+              label: "今天",
+            },
+            {
+              date_value: "tomorrow",
+              label: "明天",
+            },
+          ],
+          // time_value: new Date(2016, 9, 10, 18, 40),
+          time_value: "",
+          form: {
+            name: "",
+            region: "",
+          },
+        };
+      },
+      methods: {
+        LoginMode: function (value) {
+          if (this.radio_login === "1" || this.radio_login === 1) {
+            this.is_manual = 0;
+            this.input_writeable = false;
+          } else {
+            this.is_manual = 1;
+            this.input_writeable = true;
+          }
+        },
+        addGoods: function () {
+          this.goods_link_counter.push({});
+        },
+        changeRunStatus: function () {
+          if (!this.date_value) {
+            this.date_value = "today";
+          }
+          if (!this.time_value) {
+            this.time_value = new Date();
+          }
+          this.run_status = "trigger_run";
+        },
+      },
+    });
+  </script>
+</html>

@@ -9,28 +9,47 @@ import sys
 from concurrent.futures import ProcessPoolExecutor
 from exception import SKException
 from bs4 import BeautifulSoup
-from config import global_config
-from logger import logger
+from Config.settings import config
+from Logger.logger import logger
 from login import SpiderSession, QrLogin
-from message import sendMessage
+from Message.message import sendMessage
 from timer import Timer
 from util import parse_json
 
 
 class Waiter():
-    def __init__(self):
+    def __init__(self,
+                 skuids=config.global_config.getRaw("Spider", "sku_id"),
+                 area=config.global_config.getRaw("Spider", "area"),
+                 eid=config.global_config.getRaw("Spider", "eid"),
+                 fp=config.global_config.getRaw("Spider", "fp"),
+                 count=config.global_config.getRaw("Spider", "amount"),
+                 payment_pwd=config.global_config.getRaw(
+                     "Account", "payment_pwd"),
+                 retry=eval(config.global_config.getRaw("Spider", "retry")),
+                 work_count=eval(config.global_config.getRaw(
+                     'Spider', 'work_count')),
+                 timeout=float(config.global_config.getRaw(
+                     "Spider", "timeout"))
+                 ):
+
+        self.skuids = skuids
+        self.area = area
+        self.eid = eid
+        self.fp = fp
+        self.count = count
+        self.payment_pwd = payment_pwd
+        self.retry = retry
+        self.work_count = work_count
+        self.timeout = timeout
+
         self.spider_session = SpiderSession()
         self.spider_session.load_cookies_from_local()
         self.session = self.spider_session.get_session()
         self.qrlogin = QrLogin(self.spider_session)
-        self.skuids = global_config.getRaw("config", "sku_id")
-        self.area = global_config.getRaw("config", "area")
-        self.eid = global_config.getRaw("config", "eid")
-        self.fp = global_config.getRaw("config", "fp")
         self.user_agent = self.spider_session.user_agent
-        self.item_cat = dict()
-        self.item_vender_ids = dict()  # 记录商家id
-        self.timeout = float(global_config.getRaw('config', 'timeout'))
+        self.item_cat = {}
+        self.item_vender_ids = {}  # 记录商家id
         self.headers = {'User-Agent': self.user_agent}
         self.timers = Timer()
 
@@ -55,7 +74,7 @@ class Waiter():
         """
         用户登陆态校验装饰器。若用户未登陆，则调用扫码登陆
         """
-        @functools.wraps(func)
+        @ functools.wraps(func)
         def new_func(self, *args, **kwargs):
             if not self.qrlogin.is_login:
                 logger.info("{0} 需登陆后调用，开始扫码登陆".format(func.__name__))
@@ -101,31 +120,34 @@ class Waiter():
 
     def get_sku_title(self):
         """获取商品名称"""
-        url = 'https://item.jd.com/{}.html'.format(global_config.getRaw('config', 'sku_id'))
+        url = 'https://item.jd.com/{}.html'.format(self.skuids)
         resp = self.session.get(url).content
         x_data = html.etree.HTML(resp)
         sku_title = x_data.xpath('/html/head/title/text()')
-        return sku_title[0]
+        try:
+            result = sku_title[0]
+            return result
+        except:
+            return self.get_sku_title()
 
-    @check_login
+    @ check_login
     def waitAndBuy_by_proc_pool(self):
         """
         多进程进行抢购
         work_count：进程数量
         """
-        work_count = eval(global_config.getRaw('settings', 'work_count'))
+        work_count = self.work_count
         with ProcessPoolExecutor(work_count) as pool:
             for i in range(work_count):
                 pool.submit(self.buy)
 
-
-    '''
-    检查是否有货
-    '''
-
-
     def check_item_stock(self):
-        stockurl = 'http://c0.3.cn/stock?skuId=' + self.skuids + '&cat=652,829,854&area=' + self.area + '&extraParam={%22originid%22:%221%22}'
+        """
+        检查是否有货
+        """
+        stockurl = 'http://c0.3.cn/stock?skuId=' + self.skuids +\
+            '&cat=652,829,854&area=' + self.area +\
+            '&extraParam={%22originid%22:%221%22}'
         response = self.session.get(stockurl)
         resp = self.session.get(stockurl)
         jsparser = json.loads(resp.text)
@@ -149,22 +171,25 @@ class Waiter():
     def _waitForSell(self):
         area_id = self.area
         sku_id = self.skuids
-        logger.info("正在等待商品上架：{}".format(self.get_sku_title()[:80] + " ......"))
+        logger.info("正在等待商品上架：{}".format(
+            self.get_sku_title()[:80] + " ......"))
         while True:
             if self.get_single_item_stock(sku_id, area_id):
-                sendMessage("商品上架: {}".format(self.get_sku_title()[:80] + " ......"))
-                logger.info("商品上架: {}".format(self.get_sku_title()[:80] + " ......"))
+                logger.info("商品上架: {}".format(
+                    self.get_sku_title()[:80] + " ......"))
                 # self.waitAndBuy_by_proc_pool()
                 self.buy()
             else:
+                logger.info("等待商品上架: {}".format(
+                    self.get_sku_title()[:80] + " ......"))
                 time.sleep(random.randint(1, 10))
 
     def _waitTimeForSell(self):
         self.initCart()
-        logger.info("正在等待商品上架：{}".format(self.get_sku_title()[:80] + " ......"))
+        logger.info("正在等待商品上架：{}".format(
+            self.get_sku_title()[:80] + " ......"))
         self.timers.start()
         self.fastBuy()
-
 
     def get_single_item_stock(self, sku_id, area_id):
         """获取单个商品库存状态
@@ -189,11 +214,13 @@ class Waiter():
 
         resp_text = ''
         try:
-            resp_text = requests.get(url=url, params=payload, headers=headers, timeout=self.timeout).text
+            resp_text = requests.get(
+                url=url, params=payload, headers=headers, timeout=self.timeout).text
             resp_json = parse_json(resp_text)
             stock_info = resp_json.get(sku_id)
             sku_state = stock_info.get('skuState')  # 商品是否上架
-            stock_state = stock_info.get('StockState')  # 商品库存状态：33 -- 现货  0,34 -- 无货  36 -- 采购中  40 -- 可配货
+            # 商品库存状态：33 -- 现货  0,34 -- 无货  36 -- 采购中  40 -- 可配货
+            stock_state = stock_info.get('StockState')
             if sku_state == 1 and stock_state in (33, 40):
                 logger.info("有货: " + stock_info.get('StockStateName'))
                 return True
@@ -207,69 +234,14 @@ class Waiter():
             logger.error('查询 %s 库存信息发生网络请求异常:\n%s', sku_id, request_exception)
             return False
         except Exception as e:
-            logger.error('查询 %s 库存信息发生异常:\nresp: %s\nexception: %s', sku_id, resp_text, e)
+            logger.error('查询 %s 库存信息发生异常:\nresp: %s\nexception: %s',
+                         sku_id, resp_text, e)
             return False
 
-    # from selenium import webdriver
-    # from selenium.webdriver.chrome.options import Options
-    # def getInfo_selenium(self):
-    #     """
-    #     等待进行抢购
-    #     """
-    #     config_headless = True
-    #
-    #     chrome_options = Options()
-    #     chrome_options.add_argument(self.user_agent)
-    #     chrome_options.add_argument("--profile-directory=Default")
-    #     chrome_options.add_argument("--whitelisted-ips")
-    #     chrome_options.add_argument("--start-maximized")
-    #     chrome_options.add_argument("--disable-extensions")
-    #     chrome_options.add_argument("--disable-plugins-discovery")
-    #
-    #     if config_headless == True:
-    #         # 此处开启后为无头浏览器
-    #         chrome_options.add_argument('--headless')
-    #         chrome_options.add_argument('--no-sandbox')
-    #         chrome_options.add_argument('--disable-dev-shm-usage')
-    #         chrome_options.add_argument('blink-settings=imagesEnabled=false')
-    #         chrome_options.add_argument('--disable-gpu')
-    #
-    #     logger.info("正在等待商品上架：{}".format(self.get_sku_title()[:80] + " ......"))
-    #     driver = webdriver.Chrome('/usr/local/bin/chromedriver', options=chrome_options)
-    #     driver.maximize_window()
-    #
-    #     while True:
-    #         state = False
-    #         url = 'https://item.jd.com/{}.html'.format(global_config.getRaw('config', 'sku_id'))
-    #         driver.get(url)
-    #         time.sleep(60)
-    #         buttonValue = driver.find_element_by_xpath(
-    #             "/html/body/div[@class='w']/div[@class='product-intro clearfix']/div[@class='itemInfo-wrap']/div[@class='summary p-choose-wrap']/div[@id='choose-btns']/a[@id='InitCartUrl']").get_attribute(
-    #             "class")
-    #         # joinCart = x_data.xpath("/html/body/div[@class='w']/div[@class='product-intro clearfix']/div[@class='itemInfo-wrap']/div[@class='summary p-choose-wrap']/div[@id='choose-btns']/a[@id='InitCartUrl']/@class")
-    #         # notice = x_data.xpath("/html/body/div[@class='w']/div[@class='product-intro clearfix']/div[@class='itemInfo-wrap']/div[@class='summary p-choose-wrap']/div[@id='choose-btns']/a[@id='btn-notify']/text()")
-    #         if buttonValue == "btn-special1 btn-lg  btn-disable":  # 没货
-    #             State = False
-    #         else:
-    #             state = True
-    #         if state:
-    #             driver.quit()
-    #             sendMessage("商品上架: {}".format(self.get_sku_title()[:80] + " ......"))
-    #             logger.info("商品上架: {}".format(self.get_sku_title()[:80] + " ......"))
-    #             # self.waitAndBuy_by_proc_pool()
-    #             self.buy()
-    #         else:
-    #             pass
-
-
-
-
-    '''
-    取消勾选购物车中的所有商品
-    '''
-
-
     def cancel_select_all_cart_item(self):
+        '''
+        取消勾选购物车中的所有商品
+        '''
         url = "https://cart.jd.com/cancelAllItem.action"
         data = {
             't': 0,
@@ -286,7 +258,6 @@ class Waiter():
     勾选购物车中的所有商品
     '''
 
-
     def select_all_cart_item(self):
         url = "https://cart.jd.com/selectAllItem.action"
         data = {
@@ -300,11 +271,9 @@ class Waiter():
             return False
         return True
 
-
     '''
     删除购物车选中商品
     '''
-
 
     def remove_item(self):
         url = "https://cart.jd.com/batchRemoveSkusFromCart.action"
@@ -337,7 +306,6 @@ class Waiter():
     购物车详情
     '''
 
-
     def cart_detail(self):
         url = 'https://cart.jd.com/cart.action'
         headers = {
@@ -362,14 +330,18 @@ class Waiter():
                 # ['increment', '8888', '100002404322', '2', '1', '0']
                 item_attr_list = item.find(class_='increment')['id'].split('_')
                 p_type = item_attr_list[4]
-                promo_id = target_id = item_attr_list[-1] if len(item_attr_list) == 7 else 0
+                promo_id = target_id = item_attr_list[-1] if len(
+                    item_attr_list) == 7 else 0
 
                 cart_detail[sku_id] = {
-                    'name': self.get_tag_value(item.select('div.p-name a')),  # 商品名称
+                    # 商品名称
+                    'name': self.get_tag_value(item.select('div.p-name a')),
                     'verder_id': item['venderid'],  # 商家id
                     'count': int(item['num']),  # 数量
-                    'unit_price': self.get_tag_value(item.select('div.p-price strong'))[1:],  # 单价
-                    'total_price': self.get_tag_value(item.select('div.p-sum strong'))[1:],  # 总价
+                    # 单价
+                    'unit_price': self.get_tag_value(item.select('div.p-price strong'))[1:],
+                    # 总价
+                    'total_price': self.get_tag_value(item.select('div.p-sum strong'))[1:],
                     'is_selected': 'item-selected' in item['class'],  # 商品是否被勾选
                     'p_type': p_type,
                     'target_id': target_id,
@@ -381,11 +353,9 @@ class Waiter():
         logger.info('购物车信息：%s', cart_detail)
         return cart_detail
 
-
     '''
     修改购物车商品的数量
     '''
-
 
     def change_item_num_in_cart(self, sku_id, vender_id, num, p_type, target_id, promo_id):
         url = "https://cart.jd.com/changeNum.action"
@@ -410,17 +380,15 @@ class Waiter():
         resp = self.session.post(url, data=data)
         return json.loads(resp.text)['sortedWebCartResult']['achieveSevenState'] == 2
 
-
     '''
     添加商品到购物车
     '''
-
 
     def add_item_to_cart(self, sku_id):
         url = 'https://cart.jd.com/gate.action'
         payload = {
             'pid': sku_id,
-            'pcount': 1,
+            'pcount': self.count,
             'ptype': 1,
         }
         resp = self.session.get(url=url, params=payload)
@@ -428,13 +396,13 @@ class Waiter():
             result = True
         else:  # 普通商品成功加入购物车后会跳转到提示 "商品已成功加入购物车！" 页面
             soup = BeautifulSoup(resp.text, "html.parser")
-            result = bool(soup.select('h3.ftx-02'))  # [<h3 class="ftx-02">商品已成功加入购物车！</h3>]
+            # [<h3 class="ftx-02">商品已成功加入购物车！</h3>]
+            result = bool(soup.select('h3.ftx-02'))
 
         if result:
             logger.info('%s  已成功加入购物车', sku_id)
         else:
             logger.error('%s 添加到购物车失败', sku_id)
-
 
     def get_checkout_page_detail(self):
         """获取订单结算页面信息
@@ -456,29 +424,36 @@ class Waiter():
             'Host': 'trade.jd.com',
         }
         try:
+            # print(url)
             resp = self.session.get(url=url, params=payload, headers=headers)
+            if "刷新太频繁了" in resp.text:
+                logger.error("刷新太频繁了 url: {}".format(url))
+                return ''
+
             if not self.response_status(resp):
                 logger.error('获取订单结算页信息失败')
                 return ''
 
             soup = BeautifulSoup(resp.text, "html.parser")
-            risk_control = self.get_tag_value(soup.select('input#riskControl'), 'value')
+            # print(soup.title)
+            risk_control = self.get_tag_value(
+                soup.select('input#riskControl'), 'value')
 
             order_detail = {
-                'address': soup.find('span', id='sendAddr').text[5:],  # remove '寄送至： ' from the begin
-                'receiver': soup.find('span', id='sendMobile').text[4:],  # remove '收件人:' from the begin
-                'total_price': soup.find('span', id='sumPayPriceId').text[1:],  # remove '￥' from the begin
+                # remove '寄送至： ' from the begin
+                'address': soup.find('span', id='sendAddr').text[5:],
+                # remove '收件人:' from the begin
+                'receiver': soup.find('span', id='sendMobile').text[4:],
+                # remove '￥' from the begin
+                'total_price': soup.find('span', id='sumPayPriceId').text[1:],
                 'items': []
             }
 
             logger.info("下单信息：%s", order_detail)
             return order_detail
-        except requests.exceptions.RequestException as e:
-            logger.error('订单结算页面获取异常：%s' % e)
         except Exception as e:
-            logger.error('下单页面数据解析异常：%s', e)
-        return -1
-
+            logger.error('该商品频繁刷新被京东风控！！！（仅限该商品，请勿重复多次下单，易被风控）')
+        return ''
 
     def submit_order(self, risk_control):
         """提交订单
@@ -513,7 +488,8 @@ class Waiter():
             'riskControl': risk_control,
             'submitOrderParam.isBestCoupon': 1,
             'submitOrderParam.jxj': 1,
-            'submitOrderParam.trackId': '9643cbd55bbbe103eef18a213e069eb0',  # Todo: need to get trackId
+            # Todo: need to get trackId
+            'submitOrderParam.trackId': '9643cbd55bbbe103eef18a213e069eb0',
             # 'submitOrderParam.eid': eid,
             # 'submitOrderParam.fp': fp,
             'submitOrderParam.needCheck': 1,
@@ -521,9 +497,10 @@ class Waiter():
 
         def encrypt_payment_pwd(payment_pwd):
             return ''.join(['u3' + x for x in payment_pwd])
-        self.payment_pwd=global_config.getRaw("account", "payment_pwd")
+
         if len(self.payment_pwd) > 0:
-            data['submitOrderParam.payPassword'] = encrypt_payment_pwd(self.payment_pwd)
+            data['submitOrderParam.payPassword'] = encrypt_payment_pwd(
+                self.payment_pwd)
 
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.100 Safari/531.36",
@@ -535,6 +512,9 @@ class Waiter():
 
         try:
             resp = self.session.post(url=url, data=data, headers=headers)
+            if "刷新太频繁了" in resp.text:
+                logger.error("刷新太频繁了 url: {}".format(url))
+                return False
             resp_json = json.loads(resp.text)
 
             # 返回信息示例：
@@ -553,10 +533,11 @@ class Waiter():
                 sys.exit(1)
                 return True
             else:
-                message, result_code = resp_json.get('message'), resp_json.get('resultCode')
+                message, result_code = resp_json.get(
+                    'message'), resp_json.get('resultCode')
                 if result_code == 0:
                     # self._save_invoice()
-                    message = message + '(下单商品可能为第三方商品，将切换为普通发票进行尝试)'
+                    message = message + '<<<<<<<<<<京东返回的限制信息<<<<<<<-------该商品被京东限制购买'
                 elif result_code == 60077:
                     message = message + '(可能是购物车为空 或 未勾选购物车中商品)'
                 elif result_code == 60123:
@@ -568,18 +549,13 @@ class Waiter():
             logger.error(e)
             return False
 
-
-
-
-
     '''
     购买环节
     测试三次
     '''
 
-
     def buyMask(self, sku_id):
-        retry = eval(global_config.getRaw("config", "retry"))
+        retry = self.retry
         for count in range(retry):
             logger.info('第[%s/%s]次尝试提交订单', count, 3)
             self.cancel_select_all_cart_item()
@@ -590,7 +566,7 @@ class Waiter():
                 self.change_item_num_in_cart(
                     sku_id=sku_id,
                     vender_id=cart_item.get('vender_id'),
-                    num=1,
+                    num=self.skuids,
                     p_type=cart_item.get('p_type'),
                     target_id=cart_item.get('target_id'),
                     promo_id=cart_item.get('promo_id')
@@ -609,7 +585,6 @@ class Waiter():
             logger.info('执行结束，提交订单失败！')
             return False
 
-
     '''
     查询库存
     '''
@@ -618,32 +593,37 @@ class Waiter():
     update by rlacat
     解决skuid长度过长（超过99个）导致无法查询问题
     '''
+
     def check_stock(self):
         st_tmp = []
         len_arg = 70
-        #print("skustr:",skuidStr)
-        #print("skuids:",len(skuids))
+        # print("skustr:",skuidStr)
+        # print("skuids:",len(skuids))
         skuid_nums = len(self.skuids)
         skuid_batchs = math.ceil(skuid_nums / len_arg)
-        #print("skuid_batchs:",skuid_batchs)
-        if(skuid_batchs > 1):
-            for i in range(0,skuid_batchs):
-                if(len_arg*(i+1) <= len(self.skuids)):
-                    #print("取个数：",len_arg*i,"至",len_arg*(i+1))
-                    skuidStr = ','.join(self.skuids[len_arg*i:len_arg*(i+1)])
-                    st_tmp+=self.check_stock_tmp(skuidStr,self.skuids[len_arg*i:len_arg*(i+1)])
+        # print("skuid_batchs:",skuid_batchs)
+        if (skuid_batchs > 1):
+            for i in range(0, skuid_batchs):
+                if (len_arg * (i + 1) <= len(self.skuids)):
+                    # print("取个数：",len_arg*i,"至",len_arg*(i+1))
+                    skuidStr = ','.join(
+                        self.skuids[len_arg * i:len_arg * (i + 1)])
+                    st_tmp += self.check_stock_tmp(skuidStr,
+                                                   self.skuids[len_arg * i:len_arg * (i + 1)])
                 else:
-                    #print("取个数：",len_arg*i,"至",len_arg*(i+1))
-                    skuidStr = ','.join(self.skuids[len_arg*i:skuid_nums])#skuid配置的最后一段
-                    #print(skuidStr)
-                    st_tmp+=self.check_stock_tmp(skuidStr,self.skuids[len_arg*i:skuid_nums])
+                    # print("取个数：",len_arg*i,"至",len_arg*(i+1))
+                    skuidStr = ','.join(
+                        self.skuids[len_arg * i:skuid_nums])  # skuid配置的最后一段
+                    # print(skuidStr)
+                    st_tmp += self.check_stock_tmp(skuidStr,
+                                                   self.skuids[len_arg * i:skuid_nums])
         else:
-            #<=1的情况
+            # <=1的情况
             skuidStr = ','.join(self.skuids)
-            st_tmp=self.check_stock_tmp(skuidStr,self.skuids)
+            st_tmp = self.check_stock_tmp(skuidStr, self.skuids)
         return st_tmp
 
-    def check_stock_tmp(self, skuidString,skuids_a):
+    def check_stock_tmp(self, skuidString, skuids_a):
         callback = 'jQuery' + str(random.randint(1000000, 9999999))
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.100 Safari/531.36",
@@ -664,32 +644,32 @@ class Waiter():
         respjson = json.loads(resptext)
         inStockSkuid = []
         nohasSkuid = []
-        #print(resptext,respjson)
+        # print(resptext,respjson)
         for i in skuids_a:
-            #print("当前处理：",i)
-            if(respjson[i]['StockStateName'] != '无货'):
+            # print("当前处理：",i)
+            if (respjson[i]['StockStateName'] != '无货'):
                 inStockSkuid.append(i)
             else:
                 nohasSkuid.append(i)
-        #print(nohasSkuid)
+        # print(nohasSkuid)
         logger.info('[%s]无货', ','.join(nohasSkuid))
         return inStockSkuid
 
     @check_login
     def buy(self):
-        sku_id = global_config.getRaw('config', 'sku_id')
-        retry = eval(global_config.getRaw("config", "retry"))
+        sku_id = self.skuids
+        retry = self.retry
         for count in range(retry):
             logger.info('第[%s/%s]次尝试提交订单', count, retry)
             self.cancel_select_all_cart_item()
             cart = self.cart_detail()
             if sku_id in cart:
-                logger.info('%s 已在购物车中，调整数量为 %s', sku_id, 1)
+                logger.info('%s 已在购物车中，调整数量为 %s', sku_id, self.count)
                 cart_item = cart.get(sku_id)
                 self.change_item_num_in_cart(
                     sku_id=sku_id,
                     vender_id=cart_item.get('vender_id'),
-                    num=1,
+                    num=self.skuids,
                     p_type=cart_item.get('p_type'),
                     target_id=cart_item.get('target_id'),
                     promo_id=cart_item.get('promo_id')
@@ -710,16 +690,16 @@ class Waiter():
 
     @check_login
     def initCart(self):
-        sku_id = global_config.getRaw('config', 'sku_id')
+        sku_id = self.skuids
         self.cancel_select_all_cart_item()
         cart = self.cart_detail()
         if sku_id in cart:
-            logger.info('%s 已在购物车中，调整数量为 %s', sku_id, 1)
+            logger.info('%s 已在购物车中，调整数量为 %s', sku_id, self.count)
             cart_item = cart.get(sku_id)
             self.change_item_num_in_cart(
                 sku_id=sku_id,
                 vender_id=cart_item.get('vender_id'),
-                num=1,
+                num=self.count,
                 p_type=cart_item.get('p_type'),
                 target_id=cart_item.get('target_id'),
                 promo_id=cart_item.get('promo_id')
@@ -730,7 +710,7 @@ class Waiter():
 
     @check_login
     def fastBuy(self):
-        retry = eval(global_config.getRaw("config", "retry"))
+        retry = self.retry
         for count in range(retry):
             logger.info('第[%s/%s]次尝试提交订单', count, retry)
             risk_control = self.get_checkout_page_detail()
@@ -741,8 +721,8 @@ class Waiter():
             if len(risk_control) > 0:
                 if self.submit_order(risk_control):
                     return True
-            logger.info('休息%ss', 3)
-            time.sleep(3)
+            logger.info('休息%ss', 5)
+            time.sleep(5)
         else:
             logger.info('执行结束，提交订单失败！')
             return False

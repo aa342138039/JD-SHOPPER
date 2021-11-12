@@ -4,7 +4,7 @@ import requests
 import os
 import time
 
-from config import global_config
+from Config.settings import config
 
 USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36",
@@ -79,13 +79,13 @@ def wait_some_time():
 
 def send_wechat(message):
     """推送信息到微信"""
-    url = 'http://sc.ftqq.com/{}.send'.format(global_config.getRaw('messenger', 'sckey'))
+    url = 'http://sc.ftqq.com/{}.send'.format(config.global_config.getRaw('messenger', 'sckey'))
     payload = {
         "text":'抢购结果',
         "desp": message
     }
     headers = {
-        'User-Agent':global_config.getRaw('config', 'DEFAULT_USER_AGENT')
+        'User-Agent':config.global_config.getRaw('config', 'DEFAULT_USER_AGENT')
     }
     requests.get(url, params=payload, headers=headers)
 

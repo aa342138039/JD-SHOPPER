@@ -5,7 +5,9 @@
 [![license](https://img.shields.io/badge/license-GPL-blue.svg)](./LICENSE)
 [![star, issue](https://img.shields.io/badge/star%2C%20issue-welcome-brightgreen.svg)](https://github.com/tychxn/jd-assistant)
 
-京东抢购助手( 1.缺货上架自动加购物车下单 2.定时加购物车下单)
+京东抢购助手( 1.缺货上架自动加购物车下单 2.定时加购物车下单
+
+![操作界面](./Static/img/shopper.jpg)
 
 
 ## 特别声明:
@@ -36,6 +38,7 @@
 
 ## 主要功能
 
+- web操作界面
 - 登陆京东商城（[www.jd.com](http://www.jd.com/)）
   - 手机扫码登录
   - 保存/加载登录cookies (可验证cookies是否过期)
@@ -53,11 +56,13 @@
   - 商品预约
   - 用户信息查询
 
-## 运行环境
+## 快速开始
+
+#### 运行环境
 
 - [Python 3](https://www.python.org/)
 
-## 第三方库
+#### 第三方库
 
 - [Requests](http://docs.python-requests.org/en/master/)
 - [Beautiful Soup](https://www.crummy.com/software/BeautifulSoup/bs4/doc/)
@@ -72,8 +77,22 @@ pip install -r requirements.txt
 pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple/
 ```
 
-## 使用教程  
-#### 1. 推荐Chrome浏览器
+### *web*界面 - 使用教程
+
+1. 推荐 **Chrome** 浏览器
+2. 到 */TEST/area_id/* 目录下查询你所在地的地区标识ID
+3. 如果你的账户有**京豆京券余额**，请到*/Config/config.ini*设置密码，或者换个账号运行
+4. 命令行运行服务
+
+```shell
+python3 runserver.py
+```
+
+3. 浏览器打开 http://0.0.0.0:12021/
+
+### *命令行* - 使用教程  
+
+#### 1. 新版的web界面并不稳定，也许命令行更适合
 #### 2. 网页扫码登录，或者账号密码登录
 #### 3. 填写config.ini配置信息 
 (1)`eid`和`fp`找个普通商品随便下单,然后抓包就能看到,这两个值可以填固定的 
@@ -121,8 +140,12 @@ python3 main.py
 若两分钟还未抢购成功，基本上就是没抢到！程序暂时不支持自动停止，需要手动STOP！  
 
 ## 感谢
-##### 作者-1 https://github.com/zhou-xiaojun/jd_mask 提供的代码
-##### 作者-2 https://github.com/wlwwu/jd_maotai 提供的代码
-##### 作者-3 https://github.com/andyzys/jd_seckill 提供的代码
-##### 作者-4 https://github.com/tychxn/jd-assistant 提供的代码
+##### 作者-1 https://github.com/zhou-xiaojun/jd_mask 的开源项目
+##### 作者-2 https://github.com/wlwwu/jd_maotai 的开源项目
+##### 作者-3 https://github.com/andyzys/jd_seckill 的开源项目
+##### 作者-4 https://github.com/tychxn/jd-assistant 的开源项目
+
+##### 作者-5 https://gitee.com/iszhangk/jd_robot 的开源项目
+
+
 

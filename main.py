@@ -12,7 +12,7 @@ if __name__ == '__main__':
  2.自动定时加购物车下单（普通商品，非秒杀抢购）
 """
     print(choiceList)
-    choice_function = config.global_config.getRaw("config", "mode")
+    choice_function = ''
     if choice_function == '':
         choice_function = input('请选择:')
     config.global_config.setMode(choice_function)

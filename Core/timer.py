@@ -9,10 +9,10 @@ from Config.settings import config
 
 
 class Timer(object):
-    def __init__(self, sleep_interval=0.5):
+    def __init__(self, buyTime, sleep_interval=0.5):
         # '2018-09-28 22:45:50.000'
         # buy_time = 2020-12-22 09:59:59.500
-        buy_time_everyday = config.global_config.getRaw('config', 'buy_time').__str__()
+        buy_time_everyday = buyTime
         localtime = time.localtime(time.time())
         #self.buy_time = datetime.strptime(
         #    localtime.tm_year.__str__() + '-' + localtime.tm_mon.__str__() + '-' + localtime.tm_mday.__str__()
@@ -52,15 +52,13 @@ class Timer(object):
     def start(self):
         logger.info('正在等待到达设定时间:{}'.format(self.buy_time))
         logger.info('正检测本地时间与京东服务器时间误差为【{}】毫秒'.format(self.diff_time))
-        mode = config.global_config.getMode()
-        if mode != '3':
-            while True:
-                # 本地时间减去与京东的时间差，能够将时间误差提升到0.1秒附近
-                # 具体精度依赖获取京东服务器时间的网络时间损耗
-                if self.local_time() - self.diff_time >= self.buy_time_ms:
-                    logger.info('时间到达，开始执行……')
-                    break
-                else:
-                    time.sleep(self.sleep_interval)
-        else:
-            pass
+
+        while True:
+            # 本地时间减去与京东的时间差，能够将时间误差提升到0.1秒附近
+            # 具体精度依赖获取京东服务器时间的网络时间损耗
+            if self.local_time() - self.diff_time >= self.buy_time_ms:
+                logger.info('时间到达，开始执行……')
+                break
+            else:
+                time.sleep(self.sleep_interval)
+

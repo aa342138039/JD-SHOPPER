@@ -5,10 +5,10 @@ import functools
 import json
 import os
 import pickle
-from logger import logger
-from config import global_config
-from exception import SKException
-from util import (
+from Logger.logger import logger
+from Config.settings import config
+from Core.exception import SKException
+from Core.util import (
     parse_json,
     wait_some_time,
     response_status,
@@ -21,7 +21,7 @@ class SpiderSession:
     """
     def __init__(self):
         self.cookies_dir_path = "./cookies/"
-        self.user_agent = global_config.getRaw('config', 'DEFAULT_USER_AGENT')
+        self.user_agent = config.settings('Spider', 'DEFAULT_USER_AGENT')
 
         self.session = self._init_session()
 

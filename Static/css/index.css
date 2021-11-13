@@ -1,15 +1,34 @@
-.data_dict, .data_dict_goods{
-  display: none;
+body {
+  display: flex;
+  justify-content: center;
+  align-self: center;
+  height: 100vh;
+  width: 100vw;
 }
 #form_container{
-  width: 600px;
-  margin: 0 auto;
+  width: 95vw;
+  max-width: 600px;
   border: 1px solid gainsboro;
+  height: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-self: center;
 }
 h1{
   text-align: center;
   margin: 30px 0;
   padding-bottom: 20px;
+}
+#log {
+  resize: none;
+  height: 50vh;
+  border: none;
+  font-size: 16px;
+  outline: none;
+  background-color: rgba(245, 245, 245);
+  white-space: pre-wrap;
+  padding: 2vh;
 }
 #account_input, #password_input{
   width: 300px;
@@ -30,4 +49,13 @@ h1{
 }
 #run_button{
   margin-left: 30px;
+}
+.el-dialog__body {
+  width: 250px;
+  height: 250px;
+}
+
+.el-image__inner {
+  width: 250px;
+  height: 250px;
 }

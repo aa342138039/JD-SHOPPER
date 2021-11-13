@@ -79,13 +79,13 @@ def wait_some_time():
 
 def send_wechat(message):
     """推送信息到微信"""
-    url = 'http://sc.ftqq.com/{}.send'.format(config.global_config.getRaw('messenger', 'sckey'))
+    url = 'http://sc.ftqq.com/{}.send'.format(config.settings('messenger', 'sckey'))
     payload = {
         "text":'抢购结果',
         "desp": message
     }
     headers = {
-        'User-Agent':config.global_config.getRaw('config', 'DEFAULT_USER_AGENT')
+        'User-Agent':config.settings('config', 'DEFAULT_USER_AGENT')
     }
     requests.get(url, params=payload, headers=headers)
 
@@ -111,6 +111,6 @@ def open_image(image_file):
 
 
 def save_image(resp, image_file):
-    with open(image_file, 'wb') as f:
+    with open(config.path() + '/Static/img/' + image_file, 'wb') as f:
         for chunk in resp.iter_content(chunk_size=1024):
             f.write(chunk)

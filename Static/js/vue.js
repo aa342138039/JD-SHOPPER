@@ -11963,3 +11963,7 @@
   return Vue;
 
 }));
+
+
+// confirm,e.prototype.$prompt=ya.prompt,e.prototype.$notify=tl,e.prototype.$message=ou};
+//"undefined"!=typeof window&&window.Vue&&Ld(window.Vue);t.default={version:"2.15.0",

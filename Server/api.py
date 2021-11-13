@@ -1,28 +1,25 @@
 import copy
-import psutil
-
 from Config.settings import config
+from Core.spider import Waiter
+from threading import Thread
+class Global(object):
+
+    def __init__(self):
+        self.waiter = None
+        self.login = None
+        self.thread= None
+
+    def update(self):
+        self.login = self.waiter.qrlogin.is_login
+
+glo = Global()
 
 def log(request):
-    file_path = config.path() + config.settings("Logger", "FILE_PATH") + config.settings("Logger", "FILE_NAME")
+    file_path = config.path() + config.settings("Logger", "FILE_PATH") + \
+        config.settings("Logger", "FILE_NAME")
     file_page_file = open(file_path, 'r')
     return str(file_page_file.read())
 
-def systemInfo(request):
-    info = {}
-    info['cpu_count'] = psutil.cpu_count()  # CPU逻辑数量
-    info['cpu_percent'] = psutil.cpu_percent(interval=1)  # CPU使用率
-    info['cpu_times'] = psutil.cpu_times()  # CPU的用户／系统／空闲时间
-    info['virtual_memory'] = psutil.virtual_memory()  # 物理内存
-    info['swap_memory'] = psutil.swap_memory()  # 交换内存
-    info['disk_partitions'] = psutil.disk_partitions() # 磁盘分区信息
-    info['disk_partitions'] = psutil.disk_usage('/') # 磁盘使用情况
-    info['disk_partitions'] = psutil.disk_io_counters() # 磁盘IO
-    info['disk_partitions'] = psutil.net_io_counters() # 获取网络读写字节／包的个数
-    info['disk_partitions'] = psutil.net_if_addrs() # 获取网络接口信息
-    info['disk_partitions'] = psutil.net_if_stats() # 获取网络接口状态
-    # need sudo: info['disk_partitions'] = psutil.net_connections() # 获取当前网络连接信息
-    return info
 
 def serverConfig(request):
     appConfig = copy.deepcopy(config._config._sections)
@@ -32,3 +29,38 @@ def serverConfig(request):
             value = appConfig[model][item]
             # DEBUG print(model, item, value, type(value))
     return appConfig
+
+
+def jdShopper(request):
+    mode = request['mode']
+    date = request['date']
+    skuids = request['skuid']
+    area = request['area']
+    eid = request['eid']
+    fp = request['fp']
+    count = request['count']
+    retry = request['retry']
+    work_count = request['work_count']
+    timeout = request['timeout']
+    if mode == '1':
+        glo.waiter = Waiter(skuids=skuids, area=area, eid=eid, fp=fp, count=count,
+                    retry=retry, work_count=work_count, timeout=timeout)
+        glo.thread = Thread(target=glo.waiter.waitForSell)
+        glo.thread.start()
+    elif mode == '2':
+        date = date.replace("T", " ")
+        date = date.replace("Z", "")
+        glo.waiter = Waiter(skuids=skuids, area=area, eid=eid, fp=fp, count=count,
+                    retry=retry, work_count=work_count, timeout=timeout, date=date)
+        glo.thread = Thread(target=glo.waiter.waitTimeForSell)
+        glo.thread.start()
+    glo.update()
+    print(glo.login)
+    return glo.login
+
+def loginStatus(request):
+    try:
+        glo.update()
+    except:
+        pass
+    return glo.login

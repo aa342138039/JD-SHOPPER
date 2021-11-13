@@ -5,8 +5,8 @@ import json
 
 import requests
 
-from logger import logger
-from config import global_config
+from Logger.logger import logger
+from Config.settings import config
 
 
 class Messenger(object):
@@ -41,7 +41,7 @@ class Messenger(object):
             logger.error('Fail to send message [text: %s, desp: %s]: %s', text, desp, e)
 
 
-sckey = global_config.getRaw("messenger", "sckey")
+sckey = config.settings("Message", "sckey")
 message = Messenger(sckey)
 
 

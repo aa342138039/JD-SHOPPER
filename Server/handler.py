@@ -1,5 +1,4 @@
-import os, json
-import time
+import os, json, urllib, time
 
 from Logger.logger import logger
 from http.server import BaseHTTPRequestHandler
@@ -16,6 +15,7 @@ class RequestHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         self.rootPath = config.path() + "/Static"
         url = self.requestline[4:-9]
+        print(url)
         request_data = {} # 存放GET请求数据
         try:
             if url.find('?') != -1:
@@ -25,14 +25,34 @@ class RequestHandler(BaseHTTPRequestHandler):
                 for i in parameters:
                     key, val = i.split('=', 1)
                     request_data[key] = val
+            #request_data['body'] = self.rfile.read()
         except:
             logger.error("URL Format Error")
         if (url == "/"):
             self.home()
+        elif (url == ""):
+            self.noFound()
         elif ("/api" in url):
             self.api(url[4:], request_data)
         else:
             self.file(url)
+
+    def do_POST(self):
+        LOCAL_HOST = config.settings("Server", "LOCAL_HOST")
+        PORT = config.settings("Server", "PORT")
+        hostLen = len(f'/{LOCAL_HOST}:{PORT}') + 5
+        self.rootPath = config.path() + "/Static"
+        url = self.requestline[hostLen:-9]
+        request_data = json.loads(self.rfile.read(int(self.headers['content-length'])).decode())
+        if (url == "/"):
+            self.home()
+        elif (url == ""):
+            self.noFound()
+        elif ("/api" in url):
+            self.api(url[4:], request_data)
+        else:
+            self.file(url)
+        
 
     def log_message(self, format, *args):
         SERVER_LOGGER = config.settings("Logger", "SERVER_LOGGER")
@@ -103,7 +123,6 @@ class RequestHandler(BaseHTTPRequestHandler):
         # ----------------------------------------------------------------
         # 此处写API
         content = urls(url, request_data)
-
         # ----------------------------------------------------------------
         localtime = time.localtime(time.time())
         date = \

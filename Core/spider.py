@@ -7,30 +7,31 @@ import json
 import random
 import sys
 from concurrent.futures import ProcessPoolExecutor
-from exception import SKException
+from Core.exception import SKException
 from bs4 import BeautifulSoup
 from Config.settings import config
 from Logger.logger import logger
-from login import SpiderSession, QrLogin
+from Core.login import SpiderSession, QrLogin
 from Message.message import sendMessage
-from timer import Timer
-from util import parse_json
+from Core.timer import Timer
+from Core.util import parse_json
 
 
 class Waiter():
     def __init__(self,
-                 skuids=config.global_config.getRaw("Spider", "sku_id"),
-                 area=config.global_config.getRaw("Spider", "area"),
-                 eid=config.global_config.getRaw("Spider", "eid"),
-                 fp=config.global_config.getRaw("Spider", "fp"),
-                 count=config.global_config.getRaw("Spider", "amount"),
-                 payment_pwd=config.global_config.getRaw(
+                 skuids=config.settings("Spider", "sku_id"),
+                 area=config.settings("Spider", "area"),
+                 eid=config.settings("Spider", "eid"),
+                 fp=config.settings("Spider", "fp"),
+                 count=config.settings("Spider", "amount"),
+                 payment_pwd=config.settings(
                      "Account", "payment_pwd"),
-                 retry=eval(config.global_config.getRaw("Spider", "retry")),
-                 work_count=eval(config.global_config.getRaw(
-                     'Spider', 'work_count')),
-                 timeout=float(config.global_config.getRaw(
-                     "Spider", "timeout"))
+                 retry=config.settings("Spider", "retry"),
+                 work_count=config.settings(
+                     'Spider', 'work_count'),
+                 timeout=float(config.raw(
+                     "Spider", "timeout")),
+                 date=config.settings('Spider', 'buy_time').__str__()
                  ):
 
         self.skuids = skuids
@@ -42,6 +43,7 @@ class Waiter():
         self.retry = retry
         self.work_count = work_count
         self.timeout = timeout
+        self.buyTime = date
 
         self.spider_session = SpiderSession()
         self.spider_session.load_cookies_from_local()
@@ -51,7 +53,7 @@ class Waiter():
         self.item_cat = {}
         self.item_vender_ids = {}  # 记录商家id
         self.headers = {'User-Agent': self.user_agent}
-        self.timers = Timer()
+        self.timers = Timer(self.buyTime)
 
     def login_by_qrcode(self):
         """
@@ -82,9 +84,11 @@ class Waiter():
             return func(self, *args, **kwargs)
         return new_func
 
+    @ check_login
     def waitForSell(self):
         self._waitForSell()
-
+        
+    @ check_login
     def waitTimeForSell(self):
         self._waitTimeForSell()
 

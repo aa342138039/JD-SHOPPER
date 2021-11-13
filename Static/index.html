@@ -3,178 +3,126 @@
   <head>
     <meta charset="UTF-8" />
     <title>订单自动提交</title>
-    <link rel="Shortcut Icon" href="title.ico" type="image/x-icon" />
-    <link type="text/css" rel="stylesheet" href="css/element_index.css" />
-    <link type="text/css" rel="stylesheet" href="css/index.css" />
+    <link rel="Shortcut Icon" href="title.ico" type="./image/x-icon" />
+    <link type="text/css" rel="stylesheet" href="./css/element_index.css" />
+    <link type="text/css" rel="stylesheet" href="./css/index.css" />
   </head>
   <body>
     <div id="form_container">
       <h1>订单自动提交</h1>
-      <el-form ref="form" :model="form" label-width="80px">
-        <el-form-item label="登录方式">
-          <el-radio v-model="radio_login" label="1" @change="LoginMode" border
-            >自动登录</el-radio
+      <textarea v-show="!task" id="log" onpropertychange="this.scrollTop=this.scrollHeight" οnfοcus="this.scrollTop=this.scrollHeight" ></textarea>
+      <el-form v-show="task" ref="form" label-width="80px">
+        <el-form-item label="下单模式">
+          <el-radio v-model="mode" label="1" @change="buyMode" border
+            >有货自动下单</el-radio
           >
-          <el-radio v-model="radio_login" label="2" @change="LoginMode" border
-            >手动登录</el-radio
+          <el-radio v-model="mode" label="2" @change="buyMode" border
+            >定时下单</el-radio
           >
         </el-form-item>
-        <el-form-item label="账号">
-          <el-input
-            id="account_input"
-            v-model="account_value"
-            placeholder="请输入账号"
-            :disabled="input_writeable"
-          ></el-input>
-        </el-form-item>
-        <el-form-item label="密码" id="password_form">
-          <el-input
-            id="password_input"
-            v-model="password_value"
-            placeholder="请输入密码"
-            :disabled="input_writeable"
-            show-password
-          ></el-input>
         </el-form-item>
         <el-form-item label="运行时间">
-          <el-select v-model="date_value" placeholder="选择日期（默认今天）">
-            <el-option
-              v-for="item in date_options"
-              :key="item.date_value"
-              :label="item.label"
-              :value="item.date_value"
-            >
-            </el-option>
-          </el-select>
-          <el-time-picker
-            v-model="time_value"
-            :picker-options="{}"
-            placeholder="选择时间（默认现在）"
-          >
-          </el-time-picker>
+          <el-date-picker
+            v-model="date"
+            type="datetime"
+            :disabled="timeSelectAble"
+            placeholder="选择日期时间">
+          </el-date-picker>
         </el-form-item>
-        <goods_link></goods_link>
-        <div v-for="(d,index) in goods_link_counter" :key="index">
-          <goods_link></goods_link>
-        </div>
-        <el-button id="add_button" @click="addGoods">继续添加</el-button>
+        <el-form-item label="地区ID">
+          <el-input
+            id="account_input"
+            v-model="area"
+            placeholder="所属地区ID"
+          ></el-input>
+        </el-form-item>
+        <el-form-item label="商品" id="goods_link_form">
+          <el-input
+            class="goods_input"
+            v-model="skurl"
+            placeholder="填入商品链接"
+          ></el-input>
+          <el-input-number
+            class="num_select"
+            v-model="count"
+            :min="1"
+            :max="999"
+            label="购买数量"
+          ></el-input-number>
+        </el-form-item>
+        <el-form-item label="超时时间">
+          <el-input-number
+            v-model="timeout"
+            :min="1"
+            :max="1000"
+            label="超时时间"
+          ></el-input-number>
+        </el-form-item>
+        <el-form-item label="重试次数">
+          <el-input-number
+            v-model="retry"
+            :min="1"
+            :max="1000"
+            label="重试次数"
+          ></el-input-number>
+        </el-form-item>
+        <el-form-item label="线程数">
+          <el-input-number
+            v-model="work_count"
+            :min="1"
+            :max="3"
+            label="线程数"
+          ></el-input-number>
+        </el-form-item>
+        <el-button id="add_button" @click="reset()">重置选项</el-button>
         <el-button
           id="run_button"
-          @click="changeRunStatus"
+          @click="upload()"
           type="primary"
-          :class="run_status"
           >开始运行</el-button
         >
+
+        <el-dialog
+          title="二维码"
+          :visible.sync="qrVisible"
+          width="30%">
+          <el-image v-if="qrReset" :src="qrUrl" :key="qrID"></el-image>
+          <span slot="footer" class="dialog-footer">
+          </span>
+        </el-dialog>
+
+        <el-dialog
+          title="title"
+          :visible.sync="dialogVisible"
+          width="30%">
+          <span>{{dialog}}</span>
+          <span slot="footer" class="dialog-footer">
+            <el-button @click="dialogVisible = false">取 消</el-button>
+            <el-button type="primary" @click="dialogVisible = false">确 定</el-button>
+          </span>
+        </el-dialog>
+
       </el-form>
-      <ul class="data_dict">
-        <!--登录方式， 账号， 密码， 运行时间， url-->
-        <li class="is_manual">{{is_manual}}</li>
-        <li class="jd_conut">{{account_value}}</li>
-        <li class="jd_password">{{password_value}}</li>
-        <li class="run_date">{{date_value}}</li>
-        <li class="run_time">{{time_value}}</li>
-      </ul>
     </div>
-    <template id="goods_link">
-      <el-form-item label="添加商品" id="goods_link_form">
-        <el-input
-          class="goods_input"
-          v-model="goods_url"
-          placeholder="商品链接"
-        ></el-input>
-        <el-input-number
-          class="num_select"
-          v-model="num"
-          @change="handleChange"
-          :min="1"
-          :max="999"
-          label="数量"
-        ></el-input-number>
-        <ul class="data_dict_goods">
-          <li class="goods_url">{{goods_url}}</li>
-          <li class="goods_num">{{num}}</li>
-        </ul>
-      </el-form-item>
-    </template>
   </body>
-  <script src="js/vue.js"></script>
-  <script src="js/element_index.js"></script>
-  <script>
-    Vue.component("goods_link", {
-      template: "#goods_link",
-      data: function () {
-        return {
-          num: 1,
-          goods_url: "",
-        };
-      },
-      // props:{
-      //   num:{
-      //     type: Number,
-      //     default: 1
-      //   },
-      //   goods_url: {
-      //     type: String,
-      //     default: ''
-      //   }
-      // },
-      methods: {
-        handleChange(value) {},
-      },
-    });
-    new Vue({
-      el: "#form_container",
-      data: function () {
-        return {
-          account_value: "",
-          password_value: "",
-          radio_login: "1",
-          is_manual: 0,
-          input_writeable: false,
-          run_status: "wait",
-          goods_link_counter: [],
-          date_value: "",
-          date_options: [
-            {
-              date_value: "today",
-              label: "今天",
-            },
-            {
-              date_value: "tomorrow",
-              label: "明天",
-            },
-          ],
-          // time_value: new Date(2016, 9, 10, 18, 40),
-          time_value: "",
-          form: {
-            name: "",
-            region: "",
-          },
-        };
-      },
-      methods: {
-        LoginMode: function (value) {
-          if (this.radio_login === "1" || this.radio_login === 1) {
-            this.is_manual = 0;
-            this.input_writeable = false;
-          } else {
-            this.is_manual = 1;
-            this.input_writeable = true;
-          }
-        },
-        addGoods: function () {
-          this.goods_link_counter.push({});
-        },
-        changeRunStatus: function () {
-          if (!this.date_value) {
-            this.date_value = "today";
-          }
-          if (!this.time_value) {
-            this.time_value = new Date();
-          }
-          this.run_status = "trigger_run";
-        },
-      },
-    });
-  </script>
+  <script src="./js/vue.js"></script>
+  <script src="./js/element_index.js"></script>
+  <script src="https://gias.jd.com/js/td.js"></script>
+  <script src="./js/index.js"></script>
 </html>
+<!-- // -->
+<!-- // -->
+<!-- // -->
+<!-- // -->
+<!-- // -->
+<!-- // -->
+<!-- // -->
+<!-- // -->
+<!-- // -->
+<!-- // -->
+<!-- // -->
+<!-- // -->
+<!-- // -->
+<!-- // -->
+<!-- // -->
+<!-- // -->

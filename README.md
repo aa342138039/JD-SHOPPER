@@ -88,7 +88,7 @@ pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple/
 python3 runserver.py
 ```
 
-3. 浏览器打开 http://0.0.0.0:12021/
+3. 浏览器打开 http://localhost:12021/
 
 ### *命令行* - 使用教程  
 

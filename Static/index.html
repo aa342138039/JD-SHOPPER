@@ -34,6 +34,7 @@
             id="account_input"
             v-model="area"
             placeholder="所属地区ID"
+            autocomplete
           ></el-input>
         </el-form-item>
         <el-form-item label="商品" id="goods_link_form">
@@ -41,6 +42,7 @@
             class="goods_input"
             v-model="skurl"
             placeholder="填入商品链接"
+            autocomplete
           ></el-input>
           <el-input-number
             class="num_select"

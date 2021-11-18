@@ -9,7 +9,7 @@ new Vue({
         count: "1", // 购买数量
         retry: "10", // 重试次数
         work_count: "1", // 启动线程数
-        timeout: "3", // 超时时间
+        timeout: "10", // 超时时间
         eid: "",
         fp: "",
         timeSelectAble: true,

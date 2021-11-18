@@ -3,20 +3,20 @@ import os, json, urllib, time
 from Logger.logger import logger
 from http.server import BaseHTTPRequestHandler
 from Config.settings import config
-
-# Document https://docs.python.org/3.9/library/http.server.html
 from Server.url import urls
 
 
+# Document https://docs.python.org/3.9/library/http.server.html
+
 class RequestHandler(BaseHTTPRequestHandler):
-    '''处理请求并返回页面'''
+    """处理请求并返回页面"""
 
     # 处理一个GET请求
     def do_GET(self):
         self.rootPath = config.path() + "/Static"
         url = self.requestline[4:-9]
         print(url)
-        request_data = {} # 存放GET请求数据
+        request_data = {}  # 存放GET请求数据
         try:
             if url.find('?') != -1:
                 req = url.split('?', 1)[1]
@@ -25,7 +25,7 @@ class RequestHandler(BaseHTTPRequestHandler):
                 for i in parameters:
                     key, val = i.split('=', 1)
                     request_data[key] = val
-            #request_data['body'] = self.rfile.read()
+            # request_data['body'] = self.rfile.read()
         except:
             logger.error("URL Format Error")
         if (url == "/"):
@@ -52,7 +52,6 @@ class RequestHandler(BaseHTTPRequestHandler):
             self.api(url[4:], request_data)
         else:
             self.file(url)
-        
 
     def log_message(self, format, *args):
         SERVER_LOGGER = config.settings("Logger", "SERVER_LOGGER")

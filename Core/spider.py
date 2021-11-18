@@ -76,19 +76,21 @@ class Waiter():
         """
         用户登陆态校验装饰器。若用户未登陆，则调用扫码登陆
         """
-        @ functools.wraps(func)
+
+        @functools.wraps(func)
         def new_func(self, *args, **kwargs):
             if not self.qrlogin.is_login:
                 logger.info("{0} 需登陆后调用，开始扫码登陆".format(func.__name__))
                 self.login_by_qrcode()
             return func(self, *args, **kwargs)
+
         return new_func
 
-    @ check_login
+    @check_login
     def waitForSell(self):
         self._waitForSell()
-        
-    @ check_login
+
+    @check_login
     def waitTimeForSell(self):
         self._waitTimeForSell()
 
@@ -134,7 +136,7 @@ class Waiter():
         except:
             return self.get_sku_title()
 
-    @ check_login
+    @check_login
     def waitAndBuy_by_proc_pool(self):
         """
         多进程进行抢购
@@ -149,9 +151,9 @@ class Waiter():
         """
         检查是否有货
         """
-        stockurl = 'http://c0.3.cn/stock?skuId=' + self.skuids +\
-            '&cat=652,829,854&area=' + self.area +\
-            '&extraParam={%22originid%22:%221%22}'
+        stockurl = 'http://c0.3.cn/stock?skuId=' + self.skuids + \
+                   '&cat=652,829,854&area=' + self.area + \
+                   '&extraParam={%22originid%22:%221%22}'
         response = self.session.get(stockurl)
         resp = self.session.get(stockurl)
         jsparser = json.loads(resp.text)

@@ -15,7 +15,6 @@ if __name__ == '__main__':
     choice_function = ''
     if choice_function == '':
         choice_function = input('请选择:')
-    config.global_config.setMode(choice_function)
     if choice_function == '1':
         waiter = Waiter()
         waiter.waitForSell()

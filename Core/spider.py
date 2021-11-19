@@ -29,6 +29,8 @@ class Waiter():
                  retry=config.settings("Spider", "retry"),
                  work_count=config.settings(
                      'Spider', 'work_count'),
+                 random_time=config.settings(
+                     'Spider', 'random_time'),
                  timeout=float(config.raw(
                      "Spider", "timeout")),
                  date=config.settings('Spider', 'buy_time').__str__()
@@ -42,6 +44,7 @@ class Waiter():
         self.payment_pwd = payment_pwd
         self.retry = retry
         self.work_count = work_count
+        self.random_time = random_time
         self.timeout = timeout
         self.buyTime = date
 
@@ -188,7 +191,7 @@ class Waiter():
             else:
                 logger.info("等待商品上架: {}".format(
                     self.get_sku_title()[:80] + " ......"))
-                time.sleep(random.randint(1, 10))
+                time.sleep(self.timeout + random.randint(1, self.random_time))
 
     def _waitTimeForSell(self):
         self.initCart()

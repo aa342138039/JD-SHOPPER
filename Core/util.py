@@ -99,7 +99,7 @@ def response_status(resp):
 
 def open_image(image_file):
     if os.name == "nt":
-        os.system('start ' + image_file)  # for Windows
+        os.system('start ' + config.path() + '/Static/img/'+ image_file)  # for Windows
     else:
         if os.uname()[0] == "Linux":
             if "deepin" in os.uname()[2]:

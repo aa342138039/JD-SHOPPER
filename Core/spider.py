@@ -58,6 +58,9 @@ class Waiter():
         self.headers = {'User-Agent': self.user_agent}
         self.timers = Timer(self.buyTime)
 
+        self.sku_title = None
+        self.init_sku_title()
+
     def login_by_qrcode(self):
         """
         二维码登陆
@@ -88,6 +91,42 @@ class Waiter():
             return func(self, *args, **kwargs)
 
         return new_func
+  
+    def init_sku_title(self,max_try=5):
+        for i in range(max_try):
+            if self._get_sku_title():
+                return True
+            else:
+                time.sleep(1)
+        logger.error(f'尝试获取sku名称失败，将名称设置为sku_id: {self.skuids}')
+        self.sku_title = self.skuids
+        return False
+
+    def _get_sku_title(self):
+        """获取商品名称"""
+        url = 'https://item.jd.com/{}.html'.format(self.skuids)
+        try:
+            resp = self.session.get(url)
+            if 'https://www.jd.com/?d' == resp.url:
+                logger.critical(f"skuid({self.skuids}) 无效, 请检查Config\config.ini中配置是否正确")
+                sys.exit(1)
+            data = resp.content
+            x_data = html.etree.HTML(data)
+            sku_title = x_data.xpath('/html/head/title/text()')
+        except requests.exceptions.Timeout:
+            logger.error('查询 %s 名称信息超时(%ss)', self.skuids, self.timeout)
+            return False
+        except requests.exceptions.RequestException as request_exception:
+            logger.error('查询 %s 名称信息发生网络请求异常:\n%s', self.skuids, request_exception)
+            return False
+        try:
+            result = sku_title[0]
+            self.sku_title = result
+            return True
+        except Exception as e:
+            logger.error('解析 %s 名称信息发生异常:\nresp: %s\nexception: %s',
+                        self.skuids, data, e)
+            return False
 
     @check_login
     def waitForSell(self):
@@ -127,17 +166,7 @@ class Waiter():
         logger.info('登录账号名称' + usernameJson['nick'])
         return usernameJson['nick']
 
-    def get_sku_title(self):
-        """获取商品名称"""
-        url = 'https://item.jd.com/{}.html'.format(self.skuids)
-        resp = self.session.get(url).content
-        x_data = html.etree.HTML(resp)
-        sku_title = x_data.xpath('/html/head/title/text()')
-        try:
-            result = sku_title[0]
-            return result
-        except:
-            return self.get_sku_title()
+
 
     @check_login
     def waitAndBuy_by_proc_pool(self):
@@ -181,22 +210,24 @@ class Waiter():
         area_id = self.area
         sku_id = self.skuids
         logger.info("正在等待商品上架：{}".format(
-            self.get_sku_title()[:80] + " ......"))
+            self.sku_title[:80] + " ......"))
         while True:
             if self.get_single_item_stock(sku_id, area_id):
                 logger.info("商品上架: {}".format(
-                    self.get_sku_title()[:80] + " ......"))
+                    self.sku_title[:80] + " ......"))
                 # self.waitAndBuy_by_proc_pool()
                 self.buy()
+                return True
             else:
-                logger.info("等待商品上架: {}".format(
-                    self.get_sku_title()[:80] + " ......"))
-                time.sleep(self.timeout + random.randint(1, self.random_time))
+                sleep_time = self.timeout + random.randint(1, self.random_time)
+                logger.info("查询间隔：{}秒  等待商品上架: {}".format(sleep_time,
+                    self.sku_title[:80] + " ......"))
+                time.sleep(sleep_time)
 
     def _waitTimeForSell(self):
         self.initCart()
         logger.info("正在等待商品上架：{}".format(
-            self.get_sku_title()[:80] + " ......"))
+            self.sku_title[:80] + " ......"))
         self.timers.start()
         self.fastBuy()
 

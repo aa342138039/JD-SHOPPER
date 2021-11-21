@@ -63,7 +63,7 @@ class RequestHandler(BaseHTTPRequestHandler):
     def home(self):
 
         file_path = self.rootPath + "/index.html"
-        home_page_file = open(file_path, 'r')
+        home_page_file = open(file_path, 'r', encoding="utf-8")
         content = str(home_page_file.read())
 
         self.send_response(200)
@@ -95,24 +95,24 @@ class RequestHandler(BaseHTTPRequestHandler):
             self.send_header("Content-Type", "application/javascript")
         elif file_name[-4:] == ".png":  # 二进制文件
             self.send_header("Content-Type", "img/png")
-            file_page_file = open(file_path, 'rb')
+            file_page_file = open(file_path, 'rb', encoding="utf-8")
             self.end_headers()
             self.wfile.write(file_page_file.read())
             return
         elif file_name[-4:] == ".jpg":  # 二进制文件
             self.send_header("Content-Type", "img/jpg")
-            file_page_file = open(file_path, 'rb')
+            file_page_file = open(file_path, 'rb', encoding="utf-8")
             self.end_headers()
             self.wfile.write(file_page_file.read())
             return
         elif file_name[-4:] == ".ico":  # 二进制文件
             self.send_header("Content-Type", "img/ico")
-            file_page_file = open(file_path, 'rb')
+            file_page_file = open(file_path, 'rb', encoding="utf-8")
             self.end_headers()
             self.wfile.write(file_page_file.read())
             return
 
-        file_page_file = open(file_path, 'r')
+        file_page_file = open(file_path, 'r', encoding="utf-8")
         content = str(file_page_file.read())
         self.send_header("Content-Length", str(len(content)))
         self.end_headers()

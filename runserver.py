@@ -4,16 +4,20 @@ from Scheduler.scheduler import Timer
 from Config.settings import config
 from Server.server import server
 from threading import Thread
+from GUI.gui import gui
 from concurrent.futures import ProcessPoolExecutor
 
+PROCESS_MODEL = config.settings("Server", "PROCESS_MODEL")
+SCHEDULER = config.settings("Scheduler", "START_USING")
+SERVER = config.settings("Server", "START_USING")
+GUI = config.settings("GUI", "START_USING")
+
+
 def running():
-    PROCESS_MODEL = config.settings("Server", "PROCESS_MODEL")
-    SCHEDULER = config.settings("Scheduler", "START_USING")
-    SERVER = config.settings("Server", "START_USING")
     if not SCHEDULER:
         thread_main = Thread(target=main)
         thread_main.start()
-    else: # 调度器开启后main函数将被scheduler调度器代理，开启定时执行main
+    else:  # 调度器开启后main函数将被scheduler调度器代理，开启定时执行main
         startTime = config.settings("Scheduler", "START_TIME")
         skipWeekend = config.settings("Scheduler", "SKIP_WEEKEND")
         scheduler = Timer(task=main, startTime=startTime, skipWeekend=skipWeekend)
@@ -26,11 +30,15 @@ def running():
         else:
             thread_server = Thread(target=server)
             thread_server.start()
+    if GUI:
+        gui()
+
 
 def server_process(work_count=4):
     with ProcessPoolExecutor(work_count) as pool:
         for i in range(work_count):
             pool.submit(server())
+
 
 if __name__ == "__main__":
     DEBUG = config.settings("Debug", "DEBUG")
@@ -39,4 +47,3 @@ if __name__ == "__main__":
         main()
     else:
         running()
-

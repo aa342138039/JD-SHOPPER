@@ -191,7 +191,7 @@ new Vue({
   });
 
 
-  // confirm,e.prototype.$prompt=ya.prompt,e.prototype.$notify=tl,e.prototype.$message=ou};
+// confirm,e.prototype.$prompt=ya.prompt,e.prototype.$notify=tl,e.prototype.$message=ou};
 //"undefined"!=typeof window&&window.Vue&&Ld(window.Vue);t.default={version:"2.15.0",
 //locale:j.use,i18n:j.i18n,install:Ld,CollapseTransition:ii,Loading:_l,Pagination:pt,
 //Dialog:gt,Autocomplete:kt,Dropdown:At,DropdownMenu:Bt,DropdownItem:Wt,Menu:ei,

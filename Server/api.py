@@ -17,7 +17,7 @@ glo = Global()
 def log(request):
     file_path = config.path() + config.settings("Logger", "FILE_PATH") + \
         config.settings("Logger", "FILE_NAME")
-    file_page_file = open(file_path, 'r')
+    file_page_file = open(file_path, 'r', encoding="utf-8")
     return str(file_page_file.read())
 
 

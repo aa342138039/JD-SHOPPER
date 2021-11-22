@@ -95,19 +95,19 @@ class RequestHandler(BaseHTTPRequestHandler):
             self.send_header("Content-Type", "application/javascript")
         elif file_name[-4:] == ".png":  # 二进制文件
             self.send_header("Content-Type", "img/png")
-            file_page_file = open(file_path, 'rb', encoding="utf-8")
+            file_page_file = open(file_path, 'rb')
             self.end_headers()
             self.wfile.write(file_page_file.read())
             return
         elif file_name[-4:] == ".jpg":  # 二进制文件
             self.send_header("Content-Type", "img/jpg")
-            file_page_file = open(file_path, 'rb', encoding="utf-8")
+            file_page_file = open(file_path, 'rb')
             self.end_headers()
             self.wfile.write(file_page_file.read())
             return
         elif file_name[-4:] == ".ico":  # 二进制文件
             self.send_header("Content-Type", "img/ico")
-            file_page_file = open(file_path, 'rb', encoding="utf-8")
+            file_page_file = open(file_path, 'rb')
             self.end_headers()
             self.wfile.write(file_page_file.read())
             return

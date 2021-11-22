@@ -9,7 +9,11 @@
 
 ![操作界面](./Static/img/shopper.jpg)
 
+## v1.0.0-stable 更新
 
+感谢 [*@FlameGate*](https://gitee.com/yanwen0614) 对本项目的贡献:
+1. 修复了windows平台下的兼容性问题
+2. 修复了网络波动带来的递归调用问题
 ## 特别声明:
 
 - 如有侵权违规，请提交PR，私信，联系我，会在7工作日内删除。

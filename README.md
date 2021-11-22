@@ -51,9 +51,12 @@
 - 对本地GUI程序进行了初步配置
 - 对readme以及文档结构进行修改
 
-### 即将到来
-
+### v1.1.0
 - 上线windows开箱即用exe程序
+- 修复windows web ui显示bug
+- 更新readme自行打包方法
+
+### 即将到来
 - 上线价格低于设定值自动下单功能
 
 ## 特别声明:
@@ -77,14 +80,14 @@
 安装：
 
 ```sh
-pip install -r requirements.txt
+pip install -r pack_requirements.txt
 ```
 
 Tips:
 >
 > 如果国内安装第三方库比较慢，可以使用以下指令进行清华源加速：
 > ```sh
-> pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple/
+> pip install -r pack_requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple/
 > ```
 >
 > 如果安装错误也可尝试
@@ -159,6 +162,24 @@ python3 main.py
 抢购是否成功通常在程序开始的一分钟内可见分晓！  
 搜索日志，出现“抢购成功，订单号xxxxx"，代表成功抢到了，务必半小时内支付订单！程序暂时不支持自动停止，需要手动STOP！  
 若两分钟还未抢购成功，基本上就是没抢到！程序暂时不支持自动停止，需要手动STOP！
+
+## 自行打包可执行文件
+> 本方法依赖 **PyInstaller**，也可采用其他模块进行打包
+> 打包入口在runserver.py
+1. 修改Config/config.ini文件
+ ```shell
+ [GUI]
+ START_USING=TRUE
+ ```
+2. 安装打包依赖
+```shell
+pip install GUI/pack_requirements.txt
+```
+3. 使用 PyInstaller 进行打包
+```shell
+python GUI/packing.py
+```
+4. 生成可执行文件在 dist/目录中
 
 ## 感谢
 

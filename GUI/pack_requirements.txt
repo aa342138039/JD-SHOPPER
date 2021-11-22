@@ -1,0 +1,5 @@
+lxml==4.5.1
+bs4==0.0.1
+requests==2.24.0
+pywebview==3.5
+PyInstaller==3.6

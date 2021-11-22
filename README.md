@@ -15,7 +15,8 @@
 
 ## 主要功能
 
-- web操作界面
+- 开箱即用的软件（仅windows）
+- web操作界面（跨平台）
 - 登陆京东商城（[www.jd.com](http://www.jd.com/)）
     - 手机扫码登录
     - 保存/加载登录cookies (可验证cookies是否过期)
@@ -94,6 +95,12 @@ Tips:
 > ```sh
 > pip install requests lxml bs4
 > ```
+
+### *windows程序* - 使用教程
+
+1. 到release界面下载jd-shopper.zip包
+2. 解压后在jd-shopper目录找到jd-shopper.exe文件
+3. 点击运行，或者右键生成快捷方式后运行
 
 ### *web*界面 - 使用教程
 

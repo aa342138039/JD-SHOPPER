@@ -1,64 +1,66 @@
-# JD_SHOPPER <img src="./Static/img/shopper.svg" width="50px">
+# JD_SHOPPER <img src="./Docs/img/shopper.svg" width="50px">
 
-[![version](https://img.shields.io/badge/python-3.4+-blue.svg)](https://www.python.org/download/releases/3.4.0/) 
+[![version](https://img.shields.io/badge/python-3.4+-blue.svg)](https://www.python.org/download/releases/3.4.0/)
 [![status](https://img.shields.io/badge/status-stable-green.svg)](https://github.com/tychxn/jd-assistant)
 [![license](https://img.shields.io/badge/license-GPL-blue.svg)](./LICENSE)
 [![star, issue](https://img.shields.io/badge/star%2C%20issue-welcome-brightgreen.svg)](https://github.com/tychxn/jd-assistant)
 
-京东抢购助手( 1.缺货上架自动加购物车下单 2.定时加购物车下单
+京东抢购助手
 
-![操作界面](./Static/img/shopper.jpg)
+1.缺货上架自动加购物车下单
 
-## v1.0.0-stable 更新
+2.定时加购物车下单
 
-感谢 [*@FlameGate*](https://gitee.com/yanwen0614) 对本项目的贡献:
-1. 修复了windows平台下的兼容性问题
-2. 修复了网络波动带来的递归调用问题
-## 特别声明:
-
-- 如有侵权违规，请提交PR，私信，联系我，会在7工作日内删除。
-
-* 本仓库发布的`JD_SHOPPER`项目中涉及的任何脚本，仅用于测试和学习研究，禁止用于商业用途，不能保证其合法性，准确性，完整性和有效性，请根据情况自行判断。
-
-* 本项目内所有资源文件，禁止任何公众号、自媒体进行任何形式的转载、发布。
-
-* `louisyoungx` 对任何脚本问题概不负责，包括但不限于由任何脚本错误导致的任何损失或损害.
-
-* 间接使用脚本的任何用户，包括但不限于建立VPS或在某些行为违反国家/地区法律或相关法规的情况下进行传播, `louisyoungx` 对于由此引起的任何隐私泄漏或其他后果概不负责。
-
-* 请勿将`JD_SHOPPER`项目的任何内容用于商业或非法目的，否则后果自负。
-
-* 如果任何单位或个人认为该项目的脚本可能涉嫌侵犯其权利，则应及时通知并提供身份证明，所有权证明，我们将在收到认证文件后删除相关脚本。
-
-* 以任何方式查看此项目的人或直接或间接使用`JD_SHOPPER`项目的任何脚本的使用者都应仔细阅读此声明。`louisyoungx` 保留随时更改或补充此免责声明的权利。一旦使用并复制了任何相关脚本或`jd_seckill`项目，则视为您已接受此免责声明。
-  
-* 您必须在下载后的24小时内从计算机或手机中完全删除以上内容。  
-  
-* 本项目遵循`GPL-3.0 License`协议，如果本特别声明与`GPL-3.0 License`协议有冲突之处，以本特别声明为准。
-
-> ***您使用或者复制了本仓库且本人制作的任何代码或项目，则视为`已接受`此声明，请仔细阅读***  
-> ***您在本声明未发出之时点使用或者复制了本仓库且本人制作的任何代码或项目且此时还在使用，则视为`已接受`此声明，请仔细阅读***
-
+![操作界面](./Docs/img/banner.jpg)
 
 ## 主要功能
 
 - web操作界面
 - 登陆京东商城（[www.jd.com](http://www.jd.com/)）
-  - 手机扫码登录
-  - 保存/加载登录cookies (可验证cookies是否过期)
+    - 手机扫码登录
+    - 保存/加载登录cookies (可验证cookies是否过期)
 - 商品查询操作
-  - 提供完整的[`地址⇔ID`](./area_id/)对应关系
-  - 根据商品ID和地址ID查询库存
-  - 根据商品ID查询价格
+    - 提供完整的[`地址⇔ID`](./area_id/)对应关系
+    - 根据商品ID和地址ID查询库存
+    - 根据商品ID查询价格
 - 购物车操作
-  - 清空/添加购物车 (无货商品也可以加入购物车，预约商品无法加入)
-  - 获取购物车商品详情
+    - 清空/添加购物车 (无货商品也可以加入购物车，预约商品无法加入)
+    - 获取购物车商品详情
 - 订单操作
-  - 获取订单结算页面信息 (商品详情, 应付总额, 收货地址, 收货人等)
-  - 提交订单（使用默认地址）
+    - 获取订单结算页面信息 (商品详情, 应付总额, 收货地址, 收货人等)
+    - 提交订单（使用默认地址）
 - 其他
-  - 商品预约
-  - 用户信息查询
+    - 商品预约
+    - 用户信息查询
+
+## 近期更新
+
+[查看详细日志](./Docs/change-log.md)
+
+### v1.0.0
+
+感谢 [*@FlameGate*](https://gitee.com/yanwen0614) 对本项目的贡献
+
+- 修复了windows平台下的兼容性问题
+- 修复了网络波动带来的递归调用问题
+- 默认host从 *'0.0.0.0'* 迁移到 *'localhost'*
+
+### v1.0.1
+
+- 修复了字体和图标显示错误的问题
+- 对本地GUI程序进行了初步配置
+- 对readme以及文档结构进行修改
+
+### 即将到来
+
+- 上线windows开箱即用exe程序
+- 上线价格低于设定值自动下单功能
+
+## 特别声明:
+
+使用本仓库之前**必须阅读** -- [*使用须知*](./Docs/notice.md)
+> ***您使用或者复制了本仓库且本人制作的任何代码或项目，则视为`已接受`此声明，请仔细阅读***  
+> ***您在本声明未发出之时点使用或者复制了本仓库且本人制作的任何代码或项目且此时还在使用，则视为`已接受`此声明，请仔细阅读***
 
 ## 快速开始
 
@@ -73,13 +75,22 @@
 - [lxml](https://lxml.de)
 
 安装：
+
 ```sh
 pip install -r requirements.txt
 ```
-如果国内安装第三方库比较慢，可以使用以下指令进行清华源加速：
-```sh
-pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple/
-```
+
+Tips:
+>
+> 如果国内安装第三方库比较慢，可以使用以下指令进行清华源加速：
+> ```sh
+> pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple/
+> ```
+>
+> 如果安装错误也可尝试
+> ```sh
+> pip install requests lxml bs4
+> ```
 
 ### *web*界面 - 使用教程
 
@@ -92,21 +103,24 @@ pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple/
 python3 runserver.py
 ```
 
-3. 浏览器打开 http://localhost:12021/
+5. 浏览器打开 http://localhost:12021/
 
-### *命令行* - 使用教程  
+### *命令行* - 使用教程
 
 #### 1. 新版的web界面并不稳定，也许命令行更适合
+
 #### 2. 网页扫码登录，或者账号密码登录
-#### 3. 填写config.ini配置信息 
-(1)`eid`和`fp`找个普通商品随便下单,然后抓包就能看到,这两个值可以填固定的 
+
+#### 3. 填写config.ini配置信息
+
+(1)`eid`和`fp`找个普通商品随便下单,然后抓包就能看到,这两个值可以填固定的
 > 随便找一个商品下单，然后进入结算页面，打开浏览器的调试窗口，切换到控制台Tab页，在控制台中输入变量`_JdTdudfp`，即可从输出的Json中获取`eid`和`fp`。  
 > 不会的话参考作者3的👉 [使用教程请参看Wiki](https://github.com/tychxn/jd-assistant/wiki/1.-%E4%BA%AC%E4%B8%9C%E6%8A%A2%E8%B4%AD%E5%8A%A9%E6%89%8B%E7%94%A8%E6%B3%95)
 
 > *不会的同学也可以打开目录下的get_eid_fp.html文件，不过有概率失败*
 
 
-(2)`sku_id`,`DEFAULT_USER_AGENT` 
+(2)`sku_id`,`DEFAULT_USER_AGENT`
 > `sku_id`已经按照Xbox Series S的填好。
 > `cookies_string` 现在已经不需要填写了
 > `DEFAULT_USER_AGENT` 可以用默认的。谷歌浏览器也可以浏览器地址栏中输入about:version 查看`USER_AGENT`替换
@@ -132,21 +146,28 @@ python3 runserver.py
 >
 > 显著特点是添加购物车能成功，但一到订单结算页面就报错，基本就是这个原因！
 
-#### 4.运行main.py 
+#### 4.运行main.py
+
 ```sh
 python3 main.py
 ```
+
 根据提示选择相应功能即可
 
-#### 5.抢购结果确认 
+#### 5.抢购结果确认
+
 抢购是否成功通常在程序开始的一分钟内可见分晓！  
 搜索日志，出现“抢购成功，订单号xxxxx"，代表成功抢到了，务必半小时内支付订单！程序暂时不支持自动停止，需要手动STOP！  
-若两分钟还未抢购成功，基本上就是没抢到！程序暂时不支持自动停止，需要手动STOP！  
+若两分钟还未抢购成功，基本上就是没抢到！程序暂时不支持自动停止，需要手动STOP！
 
 ## 感谢
+
 ##### 作者-1 https://github.com/zhou-xiaojun/jd_mask 的开源项目
+
 ##### 作者-2 https://github.com/wlwwu/jd_maotai 的开源项目
+
 ##### 作者-3 https://github.com/andyzys/jd_seckill 的开源项目
+
 ##### 作者-4 https://github.com/tychxn/jd-assistant 的开源项目
 
 ##### 作者-5 https://gitee.com/iszhangk/jd_robot 的开源项目

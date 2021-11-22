@@ -15,7 +15,7 @@ class RequestHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         self.rootPath = config.path() + "/Static"
         url = self.requestline[4:-9]
-        print(url)
+        # print(url)
         request_data = {}  # 存放GET请求数据
         try:
             if url.find('?') != -1:
@@ -111,7 +111,12 @@ class RequestHandler(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(file_page_file.read())
             return
-
+        elif file_name[-5:] == ".woff":  # 二进制文件
+            self.send_header("Content-Type", "img/ico")
+            file_page_file = open(file_path, 'rb')
+            self.end_headers()
+            self.wfile.write(file_page_file.read())
+            return
         file_page_file = open(file_path, 'r', encoding="utf-8")
         content = str(file_page_file.read())
         self.send_header("Content-Length", str(len(content)))

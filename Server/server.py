@@ -4,14 +4,16 @@ from Logger.logger import logger
 from Server.handler import RequestHandler
 from Config.settings import config
 
+NAME = config.settings("Server", "SERVER_NAME")
+VERSION = config.settings("Server", "SERVER_VERSION")
+DEBUG = config.settings("Debug", "DEBUG")
+LOCAL_HOST = config.settings("Server", "LOCAL_HOST")
+SERVER_HOST = config.settings("Server", "SERVER_HOST")
+PORT = config.settings("Server", "PORT")
+
+
 def server():
-    NAME = config.settings("Server", "SERVER_NAME")
-    VERSION = config.settings("Server", "SERVER_VERSION")
-    DEBUG = config.settings("Debug", "DEBUG")
-    LOCAL_HOST = config.settings("Server", "LOCAL_HOST")
-    SERVER_HOST = config.settings("Server", "SERVER_HOST")
-    PORT = config.settings("Server", "PORT")
-    if DEBUG == True:
+    if DEBUG:
         name = LOCAL_HOST
     else:
         name = SERVER_HOST

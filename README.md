@@ -97,7 +97,7 @@ Tips:
 > ```
 
 ### *windows程序* - 使用教程
-
+>  [点我直接下载程序压缩包](https://gitee.com/louisyoungx/JD-SHOPPER/attach_files/887631/download/jd-shopper.zip)
 1. 到release界面下载jd-shopper.zip包
 2. 解压后在jd-shopper目录找到jd-shopper.exe文件
 3. 点击运行，或者右键生成快捷方式后运行
